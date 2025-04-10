@@ -4,6 +4,7 @@
 
 ```sh
 brew install maven
+mise use java@21
 mise i
 ```
 
