@@ -1,5 +1,3 @@
-package java01;
-
 public class HelloKadai {
     public static void main(String[] args) {
         var msg = "Hello, World!!\n" + //
