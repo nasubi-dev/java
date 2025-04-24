@@ -111,6 +111,21 @@
               <sources>
                 <source>src/01</source>
                 <source>src/02</source>
+                <source>src/03</source>
+                <source>src/03-kadai</source>
+                <source>src/04</source>
+                <source>src/05</source>
+                <source>src/06</source>
+                <source>src/07</source>
+                <source>src/08</source>
+                <source>src/09</source>
+                <source>src/10</source>
+                <source>src/11</source>
+                <source>src/12</source>
+                <source>src/13</source>
+                <source>src/14</source>
+                <source>src/15</source>
+                <source>src/16</source>
                 <!-- 必要な分だけ追加 -->
               </sources>
             </configuration>
