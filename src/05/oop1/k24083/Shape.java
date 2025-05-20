@@ -3,42 +3,26 @@ package oop1.k24083;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Shape {
-  protected int x; // 図形のX座標
-  protected int y; // 図形のY座標
-  protected Color color; // 図形の色
+public abstract class Shape {
+  protected Color color;
+  protected boolean isSelected;
 
-  public Shape(int x, int y, Color color) {
-    this.x = x;
-    this.y = y;
+  public Shape(Color color) {
     this.color = color;
+    this.isSelected = false;
   }
 
-  public void draw(Graphics g) {
-    System.err.println("具体的な処理内容はサブクラスで実装してください！");
+  public abstract void draw(Graphics g);
+
+  public abstract boolean contains(int x, int y);
+
+  public abstract void move(int dx, int dy);
+
+  public void setSelected(boolean selected) {
+    this.isSelected = selected;
   }
 
-  public int getX() {
-    return x;
-  }
-
-  public void setX(int x) {
-    this.x = x;
-  }
-
-  public int getY() {
-    return y;
-  }
-
-  public void setY(int y) {
-    this.y = y;
-  }
-
-  public Color getColor() {
-    return color;
-  }
-
-  public void setColor(Color color) {
-    this.color = color;
+  public boolean isSelected() {
+    return isSelected;
   }
 }

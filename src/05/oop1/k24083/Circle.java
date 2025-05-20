@@ -4,18 +4,20 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class Circle extends Shape {
-  private int radius; // 円の半径
+  private int centerX;
+  private int centerY;
+  private int radius;
 
-  public Circle(int x, int y, int radius, Color color) {
-    super(x, y, color);
+  public Circle(int centerX, int centerY, int radius, Color color) {
+    super(color);
+    this.centerX = centerX;
+    this.centerY = centerY;
     this.radius = radius;
   }
-
 
   public int getRadius() {
     return radius;
   }
-
 
   public void setRadius(int radius) {
     this.radius = radius;
@@ -24,7 +26,22 @@ public class Circle extends Shape {
   @Override
   public void draw(Graphics g) {
     g.setColor(color);
-    // 円を描画（x, yは中心座標なので、描画位置を調整）
-    g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+    g.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    if (isSelected) {
+      g.setColor(Color.RED);
+      g.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    }
+  }
+
+  @Override
+  public boolean contains(int x, int y) {
+    double distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+    return distance <= radius;
+  }
+
+  @Override
+  public void move(int dx, int dy) {
+    centerX += dx;
+    centerY += dy;
   }
 }
