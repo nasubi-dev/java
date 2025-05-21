@@ -24,10 +24,14 @@ public class MainFrame extends JFrame {
     JRadioButton rectangleRadioButton = new JRadioButton("四角形");
     rectangleRadioButton.setActionCommand("Rectangle");
 
+    JRadioButton triangleRadioButton = new JRadioButton("三角形");
+    triangleRadioButton.setActionCommand("Triangle");
+
     // ButtonGroupを作成し、ラジオボタンをグループ化する
     ButtonGroup shapeGroup = new ButtonGroup();
     shapeGroup.add(circleRadioButton);
     shapeGroup.add(rectangleRadioButton);
+    shapeGroup.add(triangleRadioButton);
 
     // ラジオボタン用のアクションリスナー
     ActionListener shapeSelectionListener = e -> {
@@ -37,6 +41,7 @@ public class MainFrame extends JFrame {
 
     circleRadioButton.addActionListener(shapeSelectionListener);
     rectangleRadioButton.addActionListener(shapeSelectionListener);
+    triangleRadioButton.addActionListener(shapeSelectionListener);
     // --- ここまで図形選択ラジオボタン ---
 
     // --- 色選択ラジオボタン ---
@@ -86,6 +91,7 @@ public class MainFrame extends JFrame {
     toolBar.add(new JLabel("図形: "));
     toolBar.add(circleRadioButton);
     toolBar.add(rectangleRadioButton);
+    toolBar.add(triangleRadioButton);
     toolBar.addSeparator();
     toolBar.add(new JLabel("色: "));
     toolBar.add(redRadioButton);
