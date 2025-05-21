@@ -3,7 +3,7 @@ package oop1.k24083;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public abstract class Shape {
+public abstract class Shape implements Cloneable {
   protected Color color;
   protected boolean isSelected;
 
@@ -25,4 +25,7 @@ public abstract class Shape {
   public boolean isSelected() {
     return isSelected;
   }
+
+  @Override
+  public abstract Shape clone();
 }

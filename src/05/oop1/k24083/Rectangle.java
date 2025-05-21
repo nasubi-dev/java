@@ -54,4 +54,9 @@ public class Rectangle extends Shape {
     x += dx;
     y += dy;
   }
+
+  @Override
+  public Rectangle clone() {
+    return new Rectangle(x, y, width, height, color);
+  }
 }

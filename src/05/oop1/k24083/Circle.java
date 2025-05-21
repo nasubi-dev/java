@@ -44,4 +44,9 @@ public class Circle extends Shape {
     centerX += dx;
     centerY += dy;
   }
+
+  @Override
+  public Circle clone() {
+    return new Circle(centerX, centerY, radius, color);
+  }
 }

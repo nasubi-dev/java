@@ -21,7 +21,6 @@ public class Triangle extends Shape {
 
   @Override
   public boolean contains(int x, int y) {
-    // 三角形の内部判定（重心座標法）
     int x1 = xPoints[0], x2 = xPoints[1], x3 = xPoints[2];
     int y1 = yPoints[0], y2 = yPoints[1], y3 = yPoints[2];
 
@@ -39,5 +38,10 @@ public class Triangle extends Shape {
       xPoints[i] += dx;
       yPoints[i] += dy;
     }
+  }
+
+  @Override
+  public Triangle clone() {
+    return new Triangle(xPoints[0], yPoints[0], xPoints[1], yPoints[1], xPoints[2], yPoints[2], color);
   }
 }

@@ -42,7 +42,6 @@ public class MainFrame extends JFrame {
     circleRadioButton.addActionListener(shapeSelectionListener);
     rectangleRadioButton.addActionListener(shapeSelectionListener);
     triangleRadioButton.addActionListener(shapeSelectionListener);
-    // --- ここまで図形選択ラジオボタン ---
 
     // --- 色選択ラジオボタン ---
     JRadioButton redRadioButton = new JRadioButton("赤");
@@ -77,14 +76,23 @@ public class MainFrame extends JFrame {
     redRadioButton.addActionListener(colorSelectionListener);
     blueRadioButton.addActionListener(colorSelectionListener);
     greenRadioButton.addActionListener(colorSelectionListener);
-    // --- ここまで色選択ラジオボタン ---
 
     // --- クリアボタン ---
     JButton clearButton = new JButton("クリア");
     clearButton.addActionListener(e -> {
       drawingPanel.clearShapes(); // 描画パネルの図形をクリア
     });
-    // --- ここまでクリアボタン ---
+
+    // --- Undo/Redo ボタン ---
+    JButton undoButton = new JButton("元に戻す");
+    undoButton.addActionListener(e -> {
+      drawingPanel.undo(); // 前の状態に戻す
+    });
+
+    JButton redoButton = new JButton("やり直し");
+    redoButton.addActionListener(e -> {
+      drawingPanel.redo(); // 次の状態に進む
+    });
 
     // ツールバーにコンポーネントを配置
     JToolBar toolBar = new JToolBar();
@@ -99,6 +107,9 @@ public class MainFrame extends JFrame {
     toolBar.add(greenRadioButton);
     toolBar.addSeparator();
     toolBar.add(clearButton);
+    toolBar.addSeparator();
+    toolBar.add(undoButton);
+    toolBar.add(redoButton);
 
     // レイアウトの設定
     add(toolBar, BorderLayout.NORTH);

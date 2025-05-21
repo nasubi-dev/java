@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Stack;
 
 public class DrawingPanel extends JPanel {
   private Shape[] shapes; // 描画されたShapeオブジェクトの配列
@@ -16,6 +17,11 @@ public class DrawingPanel extends JPanel {
   private Shape selectedShape; // 選択された図形
   private Point lastPoint; // 最後のマウス位置
   private boolean isDragging; // ドラッグ中かどうか
+
+  // Undo/Redo用のスタック
+  private Stack<Shape[]> undoStack = new Stack<>();
+  private Stack<Shape[]> redoStack = new Stack<>();
+  private Shape[] lastState; // 操作前の状態を一時保存
 
   public DrawingPanel() {
     shapes = new Shape[0]; // 空の配列で初期化
@@ -46,6 +52,9 @@ public class DrawingPanel extends JPanel {
           selectedShape = clickedShape;
           selectedShape.setSelected(true);
           isDragging = true;
+
+          // 図形移動の前に状態を保存
+          saveState();
         } else {
           if (selectedShape != null) {
             selectedShape.setSelected(false);
@@ -100,9 +109,13 @@ public class DrawingPanel extends JPanel {
       @Override
       public void mouseReleased(MouseEvent e) {
         if (!isDragging && startPoint != null && previewShape != null) {
+          saveState(); // 操作前の状態を保存
           addShape(previewShape);
           startPoint = null;
           previewShape = null;
+        } else if (isDragging && selectedShape != null) {
+          // 図形移動操作の履歴を保存
+          pushToUndoStack();
         }
         isDragging = false;
         repaint();
@@ -116,6 +129,10 @@ public class DrawingPanel extends JPanel {
       public void keyPressed(java.awt.event.KeyEvent e) {
         if (e.getKeyCode() == java.awt.event.KeyEvent.VK_DELETE && selectedShape != null) {
           deleteSelectedShape();
+        } else if (e.getKeyCode() == java.awt.event.KeyEvent.VK_Z && e.isControlDown()) {
+          undo();
+        } else if (e.getKeyCode() == java.awt.event.KeyEvent.VK_Y && e.isControlDown()) {
+          redo();
         }
       }
     });
@@ -124,7 +141,74 @@ public class DrawingPanel extends JPanel {
     addMouseMotionListener(mouseHandler);
   }
 
+  // 状態を保存するメソッド（操作前に呼び出す）
+  private void saveState() {
+    // 現在の図形配列をディープコピー
+    lastState = new Shape[shapes.length];
+    for (int i = 0; i < shapes.length; i++) {
+      lastState[i] = shapes[i].clone();
+    }
+  }
+
+  // 操作履歴をUndoスタックに保存（操作後に呼び出す）
+  private void pushToUndoStack() {
+    if (lastState != null) {
+      undoStack.push(lastState);
+      redoStack.clear(); // 新しい操作が行われたらRedoスタックをクリア
+      lastState = null;
+    }
+  }
+
+  // Undo操作を行うメソッド
+  public boolean undo() {
+    if (undoStack.isEmpty()) {
+      return false; // Undo不可能
+    }
+
+    // 現在の状態をRedoスタックに保存
+    Shape[] currentState = new Shape[shapes.length];
+    for (int i = 0; i < shapes.length; i++) {
+      currentState[i] = shapes[i].clone();
+    }
+    redoStack.push(currentState);
+
+    // 以前の状態を復元
+    shapes = undoStack.pop();
+
+    // 選択状態をリセット
+    selectedShape = null;
+
+    repaint();
+    return true;
+  }
+
+  // Redo操作を行うメソッド
+  public boolean redo() {
+    if (redoStack.isEmpty()) {
+      return false; // Redo不可能
+    }
+
+    // 現在の状態をUndoスタックに保存
+    Shape[] currentState = new Shape[shapes.length];
+    for (int i = 0; i < shapes.length; i++) {
+      currentState[i] = shapes[i].clone();
+    }
+    undoStack.push(currentState);
+
+    // Redoスタックから状態を復元
+    shapes = redoStack.pop();
+
+    // 選択状態をリセット
+    selectedShape = null;
+
+    repaint();
+    return true;
+  }
+
   private void deleteSelectedShape() {
+    // 操作前の状態を保存
+    saveState();
+
     // 選択された図形を配列から削除
     Shape[] newShapes = new Shape[shapes.length - 1];
     int index = 0;
@@ -135,10 +219,17 @@ public class DrawingPanel extends JPanel {
     }
     shapes = newShapes;
     selectedShape = null;
+
+    // 操作履歴を保存
+    pushToUndoStack();
+
     repaint();
   }
 
   public void addShape(Shape shape) {
+    // 操作前の状態を保存
+    saveState();
+
     // 配列を1つ大きくしてshapeを追加
     Shape[] newShapes = new Shape[this.shapes.length + 1];
     for (int i = 0; i < this.shapes.length; i++) {
@@ -146,10 +237,20 @@ public class DrawingPanel extends JPanel {
     }
     newShapes[newShapes.length - 1] = shape;
     this.shapes = newShapes;
+
+    // 操作履歴を保存
+    pushToUndoStack();
   }
 
   public void clearShapes() {
+    // 操作前の状態を保存
+    saveState();
+
     this.shapes = new Shape[0]; // 空の配列で上書き
+
+    // 操作履歴を保存
+    pushToUndoStack();
+
     repaint(); // パネルを再描画
   }
 
