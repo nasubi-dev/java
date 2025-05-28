@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 
 public class SelectableGuiApp {
   private JFrame frame;
-  private JRadioButton taskARadio;
-  private JRadioButton taskBRadio;
+  private ExecutableRadioButton taskARadio;
+  private ExecutableRadioButton taskBRadio;
   private ButtonGroup buttonGroup;
   private JButton executeButton;
   private JLabel resultLabel;
@@ -24,8 +24,8 @@ public class SelectableGuiApp {
     panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
     // ラジオボタンを作成
-    taskARadio = new JRadioButton("タスクAを実行", true); // デフォルトで選択
-    taskBRadio = new JRadioButton("タスクBを実行");
+    taskARadio = new ExecutableRadioButton("タスクAを実行", new TaskA(), true); // デフォルトで選択
+    taskBRadio = new ExecutableRadioButton("タスクBを実行", new TaskB());
 
     // ButtonGroupでラジオボタンをグループ化
     buttonGroup = new ButtonGroup();
@@ -57,25 +57,29 @@ public class SelectableGuiApp {
     frame.add(panel);
   }
 
-  /**
-   * 選択されたタスクを実行する
-   */
   private void executeSelectedTask() {
-    Executable selectedTask;
+    // ButtonGroupから選択されたExecutableRadioButtonを取得
+    ExecutableRadioButton selectedRadio = getSelectedExecutableRadioButton();
 
-    // ラジオボタンの選択状態に応じてタスクを選択
-    if (taskARadio.isSelected()) {
-      selectedTask = new TaskA();
-    } else if (taskBRadio.isSelected()) {
-      selectedTask = new TaskB();
-    } else {
+    if (selectedRadio == null) {
       resultLabel.setText("結果: エラー - タスクが選択されていません");
       return;
     }
 
-    // 選択されたタスクを実行し、結果を表示
+    // if文なしで直接Executableを取得し実行
+    Executable selectedTask = selectedRadio.getExecutable();
     String result = selectedTask.execute();
     resultLabel.setText("結果: " + result);
+  }
+
+  private ExecutableRadioButton getSelectedExecutableRadioButton() {
+    // ButtonGroupのすべてのボタンを取得してチェック
+    for (AbstractButton button : java.util.Collections.list(buttonGroup.getElements())) {
+      if (button.isSelected() && button instanceof ExecutableRadioButton) {
+        return (ExecutableRadioButton) button;
+      }
+    }
+    return null;
   }
 
   public void showGUI() {
