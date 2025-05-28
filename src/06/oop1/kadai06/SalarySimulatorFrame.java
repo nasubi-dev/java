@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SalarySimulatorFrame extends JFrame {
   private JComboBox<String> employeeTypeComboBox;
@@ -24,31 +22,18 @@ public class SalarySimulatorFrame extends JFrame {
   private JLabel hoursWorkedLabel;
   private PaySlipPanel paySlipPanel;
 
-  // 従業員タイプと対応するファクトリーのマップ
-  private Map<String, EmployeeFactory> employeeFactories;
-
   public SalarySimulatorFrame() {
     setTitle("簡易給与計算シミュレータ");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setSize(800, 600);
     setLocationRelativeTo(null); // 画面中央に表示
 
-    // ファクトリーマップの初期化
-    initEmployeeFactories();
-
     initComponents();
     layoutComponents();
     attachListeners();
 
-    // 初期状態で正社員用のフィールドを表示
-    updateInputFieldsVisibility("正社員");
-  }
-
-  private void initEmployeeFactories() {
-    employeeFactories = new HashMap<>();
-    employeeFactories.put("正社員", new FullTimeEmployeeFactory());
-    employeeFactories.put("アルバイト", new PartTimeEmployeeFactory());
-    // 将来的に新しい従業員タイプが追加された場合も、ここに追加するだけでOK
+    // 初期状態でアルバイト用のフィールドを非表示にする
+    updateInputFieldsVisibility("正社員"); // 初期選択は正社員に合わせる
   }
 
   private void initComponents() {
@@ -157,26 +142,17 @@ public class SalarySimulatorFrame extends JFrame {
   }
 
   private void updateInputFieldsVisibility(String selectedType) {
-    // 選択された従業員タイプに対応するファクトリーを取得
-    EmployeeFactory factory = employeeFactories.get(selectedType);
-    if (factory == null)
-      return;
+    boolean isFullTime = "正社員".equals(selectedType);
 
-    // 表示状態を更新するマップを作成
-    Map<String, Boolean> visibilityMap = new HashMap<>();
+    overtimeHoursLabel.setVisible(isFullTime);
+    overtimeHoursField.setVisible(isFullTime);
+    bonusLabel.setVisible(isFullTime);
+    bonusField.setVisible(isFullTime);
+    commuteAllowanceLabel.setVisible(isFullTime);
+    commuteAllowanceField.setVisible(isFullTime);
 
-    // ファクトリーに表示設定を委譲
-    factory.updateFieldVisibility(visibilityMap);
-
-    // マップに基づいて表示状態を更新
-    overtimeHoursLabel.setVisible(visibilityMap.get("overtimeHours"));
-    overtimeHoursField.setVisible(visibilityMap.get("overtimeHours"));
-    bonusLabel.setVisible(visibilityMap.get("bonus"));
-    bonusField.setVisible(visibilityMap.get("bonus"));
-    commuteAllowanceLabel.setVisible(visibilityMap.get("commuteAllowance"));
-    commuteAllowanceField.setVisible(visibilityMap.get("commuteAllowance"));
-    hoursWorkedLabel.setVisible(visibilityMap.get("hoursWorked"));
-    hoursWorkedField.setVisible(visibilityMap.get("hoursWorked"));
+    hoursWorkedLabel.setVisible(!isFullTime);
+    hoursWorkedField.setVisible(!isFullTime);
   }
 
   private void attachListeners() {
@@ -186,34 +162,64 @@ public class SalarySimulatorFrame extends JFrame {
   private class CalculateButtonListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
-      // 選択された従業員タイプの取得
-      String employeeType = (String) employeeTypeComboBox.getSelectedItem();
+      try {
+        String employeeType = (String) employeeTypeComboBox.getSelectedItem();
+        String employeeId = employeeIdField.getText().trim();
+        String name = nameField.getText().trim();
 
-      // 選択された従業員タイプに対応するファクトリーを取得
-      EmployeeFactory factory = employeeFactories.get(employeeType);
-      if (factory == null) {
-        JOptionPane.showMessageDialog(SalarySimulatorFrame.this,
-            "選択された従業員タイプは対応していません。",
-            "エラー", JOptionPane.ERROR_MESSAGE);
-        return;
-      }
+        // 必須入力フィールドの検証
+        if (employeeId.isEmpty() || name.isEmpty() || basePayField.getText().trim().isEmpty()) {
+          JOptionPane.showMessageDialog(SalarySimulatorFrame.this,
+              "従業員ID、氏名、基本給/時給は必須入力です。",
+              "入力エラー", JOptionPane.ERROR_MESSAGE);
+          return;
+        }
 
-      // 入力フィールドのマップを作成
-      Map<String, JComponent> inputFields = new HashMap<>();
-      inputFields.put("employeeId", employeeIdField);
-      inputFields.put("name", nameField);
-      inputFields.put("basePay", basePayField);
-      inputFields.put("overtimeHours", overtimeHoursField);
-      inputFields.put("bonus", bonusField);
-      inputFields.put("commuteAllowance", commuteAllowanceField);
-      inputFields.put("hoursWorked", hoursWorkedField);
+        // 基本給/時給の数値変換
+        double basePay = Double.parseDouble(basePayField.getText().trim());
 
-      // ファクトリーに従業員オブジェクトの生成を委譲
-      Employee employee = factory.createEmployee(SalarySimulatorFrame.this, inputFields);
+        Employee employee = null;
 
-      // 従業員オブジェクトが正常に生成できた場合のみ給与明細を表示
-      if (employee != null) {
+        if ("正社員".equals(employeeType)) {
+          // 残業時間、賞与、交通費の検証と数値変換
+          if (overtimeHoursField.getText().trim().isEmpty() ||
+              bonusField.getText().trim().isEmpty() ||
+              commuteAllowanceField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(SalarySimulatorFrame.this,
+                "残業時間、賞与、交通費は必須入力です。",
+                "入力エラー", JOptionPane.ERROR_MESSAGE);
+            return;
+          }
+
+          double overtimeHours = Double.parseDouble(overtimeHoursField.getText().trim());
+          double bonus = Double.parseDouble(bonusField.getText().trim());
+          double commuteAllowance = Double.parseDouble(commuteAllowanceField.getText().trim());
+
+          // FullTimeEmployeeオブジェクトの生成
+          employee = new FullTimeEmployee(employeeId, name, basePay, overtimeHours, bonus, commuteAllowance);
+
+        } else if ("アルバイト".equals(employeeType)) {
+          // 労働時間の検証と数値変換
+          if (hoursWorkedField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(SalarySimulatorFrame.this,
+                "労働時間は必須入力です。",
+                "入力エラー", JOptionPane.ERROR_MESSAGE);
+            return;
+          }
+
+          double hoursWorked = Double.parseDouble(hoursWorkedField.getText().trim());
+
+          // PartTimeEmployeeオブジェクトの生成
+          employee = new PartTimeEmployee(employeeId, name, basePay, hoursWorked);
+        }
+
+        // PaySlipPanelに従業員オブジェクトを渡して給与明細を表示
         paySlipPanel.displayPaySlip(employee);
+
+      } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(SalarySimulatorFrame.this,
+            "数値の入力形式が正しくありません。",
+            "入力エラー", JOptionPane.ERROR_MESSAGE);
       }
     }
   }
