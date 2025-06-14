@@ -12,8 +12,8 @@ public class AichiTouristSpot {
   private static final double AIT_LONGITUDE = 137.1130419;
 
   // データファイルのパス
-  private static final String DATA_DIR = "src/09/oop1/section09/data/";
-  private static final String OUTPUT_DIR = "src/09/oop1/section09/output/";
+  private static final String DATA_DIR = "src/09/data/";
+  private static final String OUTPUT_DIR = "src/09/output/";
   private static final String OUTPUT_FILE = "TouristSpot.csv";
   // 処理対象のCSVファイル名
   private static final String[] CSV_FILES = {
@@ -76,9 +76,10 @@ public class AichiTouristSpot {
   private static List<TouristSpot> processCSVFile(String fileName) throws IOException {
     List<TouristSpot> spots = new ArrayList<>();
 
-    try {
-      String content = readLineWithEncoding(fileName);
-      BufferedReader reader = new BufferedReader(new StringReader(content));
+    // CSVファイルのエンコーディングを指定
+    String encoding = "MS932";
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(new FileInputStream(fileName), encoding))) {
 
       String line;
       String[] headers = null;
@@ -109,30 +110,6 @@ public class AichiTouristSpot {
     }
 
     return spots;
-  } // 複数のエンコーディングを試行する堅牢なファイル読み込み
-
-  private static String readLineWithEncoding(String fileName) throws IOException {
-    String[] encodings = { "Windows-31J", "Shift_JIS", "MS932", "UTF-8" };
-
-    for (String encoding : encodings) {
-      try (BufferedReader reader = new BufferedReader(
-          new InputStreamReader(new FileInputStream(fileName), encoding))) {
-
-        StringBuilder content = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-          content.append(line).append("\n");
-        }
-
-        return content.toString();
-      } catch (Exception e) {
-        // このエンコーディングでは読み込めない
-        continue;
-      }
-    }
-
-    // どのエンコーディングでも正常に読み込めない場合はWindows-31Jを使用
-    throw new IOException("ファイルを正常に読み込めませんでした: " + fileName);
   }
 
   private static String[] parseCSVLine(String line) {
@@ -200,45 +177,26 @@ public class AichiTouristSpot {
 
   private static String extractNameByFileName(String fileName, String[] values) {
     String fileBaseName = fileName.substring(fileName.lastIndexOf('/') + 1);
-    String name = null;
 
     if (fileBaseName.equals("c200326.csv")) {
       // c200326.csv: 4番目の列（index 3）が名称
-      name = values.length > 3 ? values[3] : null;
+      return values.length > 3 ? values[3] : null;
     } else if (fileBaseName.equals("c200328.csv")) {
       // c200328.csv: 3番目の列（index 2）が名称
-      name = values.length > 2 ? values[2] : null;
+      return values.length > 2 ? values[2] : null;
     } else if (fileBaseName.equals("c200329.csv") || fileBaseName.equals("c200330.csv")) {
       // c200329.csv, c200330.csv: 4番目の列（index 3）がデータ名
-      name = values.length > 3 ? values[3] : null;
+      return values.length > 3 ? values[3] : null;
     } else if (fileBaseName.equals("c200361.csv")) {
       // c200361.csv: 5番目の列（index 4）が施設名
-      name = values.length > 4 ? values[4] : null;
-      // c200361.csvでも文字化けチェックを行う
-      if (name != null && isGarbledText(name)) {
-        return null;
-      }
-      return name;
+      return values.length > 4 ? values[4] : null;
     } else if (fileBaseName.equals("c200362.csv") || fileBaseName.equals("c200363.csv")
         || fileBaseName.equals("c200364.csv")) {
       // c200362.csv, c200363.csv, c200364.csv: 6番目の列（index 5）が名称
-      name = values.length > 5 ? values[5] : null;
+      return values.length > 5 ? values[5] : null;
     }
 
-    // 文字化けした名前を除外
-    if (name != null && isGarbledText(name)) {
-      return null;
-    }
-
-    return name;
-  }
-
-  private static boolean isGarbledText(String text) {
-    // より具体的な文字化けパターンをチェック
-    return text.contains("ï¿½") || text.contains("�") ||
-        text.contains("ｿｽ") || text.contains("ﾟ") ||
-        text.matches(".*[\\uFFFD].*") ||
-        text.matches(".*�ｿｽ.*"); // 特定の文字化けパターン
+    return null;
   }
 
   private static double[] extractCoordinates(String pointData) {
