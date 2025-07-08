@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<university name="愛知工業大学">
+    <faculty name="情報科学部 情報科学科">
+        <department name="コンピュータシステム専攻">
+            <student id="K00001">
+                <name>鈴木 一郎</name>
+                <grade>2</grade>
+            </student>
+            <student id="K00002">
+                <name>佐藤 花子</name>
+                <grade>3</grade>
+            </student>
+        </department>
+        <department name="メディア情報専攻">
+            <student id="X00001">
+                <name>田中 実</name>
+                <grade>4</grade>
+            </student>
+        </department>
+    </faculty>
+    <faculty name="工学部">
+        <department name="機械工学科">
+            <student id="M00001">
+                <name>伊藤 翼</name>
+                <grade>3</grade>
+            </student>
+        </department>
+        <department name="電気電子工学科"/>
+    </faculty>
+    <faculty name="経営学部">
+        <department name="経営学科">
+            <student id="V00001">
+                <name>山田 卓也</name>
+                <grade>3</grade>
+            </student>
+        </department>
+    </faculty>
+</university>
