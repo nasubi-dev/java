@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3de6b0dd-c511-47a5-b513-28566b703d2e" name="変更" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/oop1/section12/MainFrame.form" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/oop1/section12/MainFrame.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../12/oop1/section12/MainFrame.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../12/university_data.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TroubleShootQuiz2/src/ThreadTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../target/classes/university_data.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../../target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="2zbJm92oA4VgvUdwEUUWpfFYuoz" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/k24083kk/development/java/src/StudentViewer",
+    "onboarding.tips.debug.path": "/Users/k24083kk/development/java/src/StudentViewer/src/Main.java",
+    "project.structure.last.edited": "モジュール",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "アプリケーション.MainFrame.executor": "Run"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="デフォルトタスク">
+      <changelist id="3de6b0dd-c511-47a5-b513-28566b703d2e" name="変更" comment="" />
+      <created>1751993995345</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1751993995345</updated>
+    </task>
+    <servers />
+  </component>
+</project>
