@@ -1,6 +1,6 @@
 
 public class ThreadTest {
-    
+
     public static void main(String[] args) {
         MyThread t1 = new MyThread("thread1", 5);
         MyThread t2 = new MyThread("thread2", 3);
@@ -9,7 +9,7 @@ public class ThreadTest {
         t1.start();
         System.out.println("Thread2 Start!");
         t2.start();
-        
+
         try {
             // スレッドの完了を待つ
             t1.join();
@@ -24,12 +24,12 @@ public class ThreadTest {
     private static class MyThread extends Thread {
         private String threadName;
         private int count;
-        
+
         public MyThread(String threadName, int count) {
             this.threadName = threadName;
             this.count = count;
         }
-        
+
         @Override
         public void run() {
             for (int i = 1; i <= count; i++) {
@@ -46,4 +46,3 @@ public class ThreadTest {
         }
     }
 }
-
