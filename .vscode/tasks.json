@@ -1,0 +1,53 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Clipperをビルド",
+			"type": "shell",
+			"command": "javac -cp . -d target/classes src/Clipper/**/*.java",
+			"group": "build",
+			"problemMatcher": [
+				"$javac"
+			],
+			"isBackground": false,
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Clipperを実行",
+			"type": "shell",
+			"command": "java -cp target/classes Clipper.ClipperApp",
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": true,
+			"dependsOn": "Clipperをビルド",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Clipperディレクトリを作成",
+			"type": "shell",
+			"command": "mkdir -p target/classes",
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": false,
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		}
+	]
+}
