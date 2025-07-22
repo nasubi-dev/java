@@ -241,13 +241,64 @@ public class EntryPanel extends JPanel {
   }
 
   private void showCopyFeedback() {
-
+    // ボタンの色変更
     Color originalColor = copyButton.getForeground();
     copyButton.setForeground(Color.GREEN);
 
-    Timer timer = new Timer(500, e -> copyButton.setForeground(originalColor));
-    timer.setRepeats(false);
-    timer.start();
+    Timer buttonTimer = new Timer(500, e -> copyButton.setForeground(originalColor));
+    buttonTimer.setRepeats(false);
+    buttonTimer.start();
+
+    // テキストエリアのシークエンシャル表示効果
+    showTextSequentially();
+  }
+
+  private void showTextSequentially() {
+    String fullText = entry.getText();
+    int maxLength = Math.min(fullText.length(), 200); // 最大200文字まで表示
+    String displayText = fullText.substring(0, maxLength);
+
+    textArea.setText(""); // 一度クリア
+    textArea.setBackground(new Color(230, 255, 230)); // 薄い緑の背景
+    textArea.setForeground(new Color(0, 100, 0)); // 濃い緑の文字
+
+    // 1秒で全文字を表示するように調整（最低20ms間隔）
+    int interval = Math.max(20, 1000 / displayText.length());
+
+    Timer textTimer = new Timer(interval, new ActionListener() {
+      private int charIndex = 0;
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (charIndex < displayText.length()) {
+          textArea.setText(displayText.substring(0, charIndex + 1));
+
+          // カーソル効果を追加
+          if (charIndex < displayText.length() - 1) {
+            textArea.setText(textArea.getText() + "|");
+          }
+
+          charIndex++;
+
+          // スクロールを最下部に
+          textArea.setCaretPosition(textArea.getDocument().getLength());
+        } else {
+          // アニメーション完了
+          ((Timer) e.getSource()).stop();
+          textArea.setText(displayText); // カーソルを削除
+
+          // 500ms後に元の状態に戻す
+          Timer resetTimer = new Timer(500, resetEvent -> {
+            updateBackground();
+            textArea.setForeground(Color.BLACK); // 元の文字色に戻す
+            textArea.setText(entry.getPreviewText());
+            ((Timer) resetEvent.getSource()).stop();
+          });
+          resetTimer.start();
+        }
+      }
+    });
+    textTimer.start();
   }
 
   public ClipboardEntry getEntry() {
