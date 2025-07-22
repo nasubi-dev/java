@@ -144,7 +144,7 @@ public class SideBarPanel extends JPanel {
       }
 
       treeModel.nodeStructureChanged(rootNode);
-      dateTree.expandRow(0); // ルートノードを展開
+      expandTree(); // ツリーを展開
     });
   }
 
@@ -163,7 +163,12 @@ public class SideBarPanel extends JPanel {
   }
 
   public void refresh() {
-    loadDateTree();
+    // EDTで確実に実行
+    SwingUtilities.invokeLater(() -> {
+      loadDateTree();
+      // ツリーを展開状態に戻す
+      expandTree();
+    });
   }
 
   public LocalDate getSelectedDate() {
@@ -264,6 +269,16 @@ public class SideBarPanel extends JPanel {
     @Override
     public int getIconHeight() {
       return size;
+    }
+  }
+
+  private void expandTree() {
+    // ルートノードを展開
+    dateTree.expandRow(0);
+    
+    // 最初の数行を展開（お気に入りと最近の日付）
+    for (int i = 1; i < Math.min(dateTree.getRowCount(), 8); i++) {
+      dateTree.expandRow(i);
     }
   }
 }

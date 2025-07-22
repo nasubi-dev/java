@@ -193,9 +193,17 @@ public class MainWindow extends JFrame implements
 
   @Override
   public void onClipboardChanged(ClipboardEntry newEntry) {
-
-    historyPanel.onNewEntry(newEntry);
-    sideBarPanel.refresh();
+    // EDTで実行することを保証
+    SwingUtilities.invokeLater(() -> {
+      // HistoryPanelに新しいエントリを通知
+      historyPanel.onNewEntry(newEntry);
+      
+      // SideBarPanelを更新（統計情報など）
+      sideBarPanel.refresh();
+      
+      // ウィンドウタイトルに一時的な通知を表示
+      showClipboardUpdateFeedback();
+    });
   }
 
   @Override
@@ -302,6 +310,19 @@ public class MainWindow extends JFrame implements
       System.out.println("Clipperを終了しました。");
       System.exit(0);
     }
+  }
+
+  private void showClipboardUpdateFeedback() {
+    // 元のタイトルを保存
+    String originalTitle = getTitle();
+    
+    // 一時的に更新通知を表示
+    setTitle(originalTitle + " - 📋 クリップボード更新！");
+    
+    // 1.5秒後に元のタイトルに戻す
+    Timer feedbackTimer = new Timer(1500, e -> setTitle(originalTitle));
+    feedbackTimer.setRepeats(false);
+    feedbackTimer.start();
   }
 
   public void showWindow() {

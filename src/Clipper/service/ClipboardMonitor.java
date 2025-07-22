@@ -132,9 +132,8 @@ public class ClipboardMonitor implements ClipboardOwner {
       // 最新のエントリを取得
       ClipboardEntry newEntry = clipboardData.getAllEntries().get(0);
 
-      SwingUtilities.invokeLater(() -> {
-        // UI更新処理（observers代替）
-      });
+      // リスナーに通知
+      notifyClipboardChange(newEntry);
 
       // 保存処理
       try {

@@ -252,9 +252,17 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   }
 
   public void onNewEntry(ClipboardEntry entry) {
-    if (currentDisplayDate != null && currentDisplayDate.equals(LocalDate.now())) {
-      refreshDisplay();
-    }
+    // EDTで即座にUIを更新
+    SwingUtilities.invokeLater(() -> {
+      // 現在の日付を表示中の場合、表示を更新
+      if (currentDisplayDate != null && currentDisplayDate.equals(LocalDate.now())) {
+        // 表示を更新してスクロールを一番上に移動
+        refreshDisplay();
+        
+        // スクロールを一番上に移動
+        scrollPane.getVerticalScrollBar().setValue(0);
+      }
+    });
   }
 
   @Override
