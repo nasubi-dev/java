@@ -57,13 +57,13 @@ public class FileManager {
         File file = new File(filePath);
 
         List<String[]> allRows = new ArrayList<>();
-        
+
         // ヘッダーを最初に追加
         allRows.add(CsvUtil.createCsvHeader());
-        
+
         // 新しいエントリを2番目に追加（ヘッダーの直下、つまり最新が上）
         allRows.add(entry.toCsvArray());
-        
+
         // 既存のデータがある場合は読み込んで追加（ヘッダーを除く）
         if (CsvUtil.isValidCsvFile(filePath)) {
           List<String[]> existingRows = CsvUtil.readCsvFile(filePath);
@@ -72,7 +72,7 @@ public class FileManager {
             allRows.add(existingRows.get(i));
           }
         }
-        
+
         // ファイル全体を書き直し
         CsvUtil.writeCsvFile(filePath, allRows);
         System.out.println("単一ファイル保存完了: " + filePath);
@@ -86,7 +86,9 @@ public class FileManager {
     }); // エグゼキュータを一時的に削除してテスト
 
     return future;
-  }  public CompletableFuture<List<ClipboardEntry>> loadEntriesAsync(LocalDate date) {
+  }
+
+  public CompletableFuture<List<ClipboardEntry>> loadEntriesAsync(LocalDate date) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         String filePath = getSingleCsvFilePath();
@@ -103,9 +105,9 @@ public class FileManager {
         // 最大500行（ヘッダー除く）まで読み込み
         int maxEntries = 500;
         int entriesToRead = Math.min(maxEntries, rows.size() - 1);
-        
+
         System.out.println("ファイル内容 (全 " + (rows.size() - 1) + " エントリ中、上位 " + entriesToRead + " エントリを読み込み):");
-        
+
         for (int i = 1; i <= entriesToRead; i++) {
           String[] row = rows.get(i);
           if (row.length >= 5) {
@@ -117,11 +119,12 @@ public class FileManager {
 
               ClipboardEntry entry = new ClipboardEntry(id, timestamp, isFavorite, text);
               entries.add(entry);
-              
+
               // 内容をプレビュー表示（最初の50文字）
               String preview = text.length() > 50 ? text.substring(0, 50) + "..." : text;
-              System.out.println("  - " + timestamp.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")) + 
-                               ": " + preview.replace("\n", "\\n"));
+              System.out
+                  .println("  - " + timestamp.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")) +
+                      ": " + preview.replace("\n", "\\n"));
             } catch (Exception e) {
               System.err.println("エントリの解析に失敗しました: " + e.getMessage());
             }
@@ -140,7 +143,7 @@ public class FileManager {
   public CompletableFuture<List<ClipboardEntry>> loadRecentEntriesAsync(int days) {
     return CompletableFuture.supplyAsync(() -> {
       System.out.println("単一ファイルから最新 500 エントリを読み込み中...");
-      
+
       // 単一ファイル対応のため、日付は無視して直接loadEntriesAsyncを呼ぶ
       try {
         List<ClipboardEntry> entries = loadEntriesAsync(LocalDate.now()).get();
@@ -251,6 +254,30 @@ public class FileManager {
 
     dates.sort((d1, d2) -> d2.compareTo(d1));
     return dates;
+  }
+
+  public CompletableFuture<Boolean> clearAllEntriesAsync() {
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        String csvFilePath = getSingleCsvFilePath();
+        File csvFile = new File(csvFilePath);
+
+        if (csvFile.exists()) {
+          // ファイルの内容を空にする（ヘッダーのみ残す）
+          List<String[]> emptyData = new ArrayList<>();
+          emptyData.add(CsvUtil.createCsvHeader());
+          CsvUtil.writeCsvFile(csvFilePath, emptyData);
+          return true;
+        } else {
+          // ファイルが存在しない場合は成功とみなす
+          return true;
+        }
+      } catch (Exception e) {
+        System.err.println("全エントリ削除中にエラーが発生: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+      }
+    }, fileOperationExecutor);
   }
 
   public String getDataDirectory() {

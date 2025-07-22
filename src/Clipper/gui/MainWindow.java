@@ -237,9 +237,35 @@ public class MainWindow extends JFrame implements
         JOptionPane.WARNING_MESSAGE);
 
     if (result == JOptionPane.YES_OPTION) {
+      // メモリ上のデータをクリア
       clipboardData.clear();
-      historyPanel.loadTodayEntries();
-      sideBarPanel.refresh();
+
+      // ファイルもクリア
+      fileManager.clearAllEntriesAsync()
+          .thenAccept(success -> {
+            SwingUtilities.invokeLater(() -> {
+              if (success) {
+                System.out.println("すべての履歴を削除しました");
+                historyPanel.loadTodayEntries();
+                sideBarPanel.refresh();
+              } else {
+                JOptionPane.showMessageDialog(this,
+                    "ファイルの削除に失敗しました。",
+                    "エラー",
+                    JOptionPane.ERROR_MESSAGE);
+              }
+            });
+          })
+          .exceptionally(throwable -> {
+            SwingUtilities.invokeLater(() -> {
+              JOptionPane.showMessageDialog(this,
+                  "削除処理中にエラーが発生しました: " + throwable.getMessage(),
+                  "エラー",
+                  JOptionPane.ERROR_MESSAGE);
+            });
+            throwable.printStackTrace();
+            return null;
+          });
     }
   }
 
@@ -269,7 +295,7 @@ public class MainWindow extends JFrame implements
     if (result == JOptionPane.YES_OPTION) {
       // クリップボード監視を停止
       clipboardMonitor.shutdown();
-      
+
       // ファイル管理サービスを停止
       fileManager.shutdown();
 

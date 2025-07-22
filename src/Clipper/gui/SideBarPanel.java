@@ -123,18 +123,18 @@ public class SideBarPanel extends JPanel {
 
       // 単一ファイル対応：メモリ内のデータを日付別にグループ化
       Map<LocalDate, List<Clipper.model.ClipboardEntry>> entriesByDate = clipboardData.getEntriesGroupedByDate();
-      
+
       // 過去30日の日付を取得して、エントリがある日付のみ表示
       List<LocalDate> recentDates = DateUtil.getRecentDates(30);
 
       for (LocalDate date : recentDates) {
         List<Clipper.model.ClipboardEntry> entriesForDate = entriesByDate.get(date);
         int count = entriesForDate != null ? entriesForDate.size() : 0;
-        
-        if (count > 0) { 
+
+        if (count > 0) {
           DateTreeNode dateNode = new DateTreeNode(date, count);
           rootNode.add(dateNode);
-          
+
           // 今日の日付を自動選択
           if (date.equals(LocalDate.now())) {
             TreePath path = new TreePath(new Object[] { rootNode, dateNode });

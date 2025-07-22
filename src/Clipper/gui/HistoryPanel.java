@@ -17,14 +17,12 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   private final ClipboardMonitor clipboardMonitor;
   private final FileManager fileManager;
 
-  
   private JPanel entriesContainer;
   private JScrollPane scrollPane;
   private JLabel statusLabel;
   private JTextField searchField;
   private JButton clearAllButton;
 
-  
   private LocalDate currentDisplayDate;
   private String currentSearchQuery = "";
   private boolean showFavoritesOnly = false;
@@ -42,23 +40,19 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
     setLayout(new BorderLayout());
     setBackground(Color.WHITE);
 
-    
     JPanel toolbarPanel = createToolbarPanel();
     add(toolbarPanel, BorderLayout.NORTH);
 
-    
     entriesContainer = new JPanel();
     entriesContainer.setLayout(new BoxLayout(entriesContainer, BoxLayout.Y_AXIS));
     entriesContainer.setBackground(Color.WHITE);
 
-    
     scrollPane = new JScrollPane(entriesContainer);
     scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     scrollPane.getVerticalScrollBar().setUnitIncrement(16);
     add(scrollPane, BorderLayout.CENTER);
 
-    
     JPanel statusPanel = createStatusPanel();
     add(statusPanel, BorderLayout.SOUTH);
   }
@@ -70,7 +64,6 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
         BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
         BorderFactory.createEmptyBorder(8, 8, 8, 8)));
 
-    
     JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     searchPanel.setOpaque(false);
 
@@ -96,7 +89,6 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
     searchPanel.add(new JLabel("検索:"));
     searchPanel.add(searchField);
 
-    
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     buttonPanel.setOpaque(false);
 
@@ -164,15 +156,13 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   private void displayEntries(List<ClipboardEntry> entries) {
     entriesContainer.removeAll();
 
-    
     List<ClipboardEntry> filteredEntries = entries.stream()
         .filter(entry -> {
-          
+
           if (showFavoritesOnly && !entry.isFavorite()) {
             return false;
           }
 
-          
           if (!currentSearchQuery.isEmpty()) {
             return entry.getText().toLowerCase().contains(currentSearchQuery.toLowerCase());
           }
@@ -182,25 +172,24 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
         .collect(java.util.stream.Collectors.toList());
 
     if (filteredEntries.isEmpty()) {
-      
+
       JLabel emptyLabel = new JLabel("エントリが見つかりません");
       emptyLabel.setForeground(Color.GRAY);
       emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
       emptyLabel.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
       entriesContainer.add(emptyLabel);
     } else {
-      
+
       for (ClipboardEntry entry : filteredEntries) {
         EntryPanel entryPanel = new EntryPanel(entry, clipboardMonitor, this);
         entriesContainer.add(entryPanel);
-        entriesContainer.add(Box.createRigidArea(new Dimension(0, 5))); 
+        entriesContainer.add(Box.createRigidArea(new Dimension(0, 5)));
       }
     }
 
     entriesContainer.revalidate();
     entriesContainer.repaint();
 
-    
     SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(0));
   }
 
@@ -230,9 +219,35 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
         JOptionPane.WARNING_MESSAGE);
 
     if (result == JOptionPane.YES_OPTION) {
+      // メモリ上のデータをクリア
       clipboardData.clear();
-      displayEntries(clipboardData.getAllEntries());
-      updateStatusLabel(0);
+
+      // ファイルもクリア
+      fileManager.clearAllEntriesAsync()
+          .thenAccept(success -> {
+            SwingUtilities.invokeLater(() -> {
+              if (success) {
+                System.out.println("すべてのエントリを削除しました");
+                displayEntries(clipboardData.getAllEntries());
+                updateStatusLabel(0);
+              } else {
+                JOptionPane.showMessageDialog(this,
+                    "ファイルの削除に失敗しました。",
+                    "エラー",
+                    JOptionPane.ERROR_MESSAGE);
+              }
+            });
+          })
+          .exceptionally(throwable -> {
+            SwingUtilities.invokeLater(() -> {
+              JOptionPane.showMessageDialog(this,
+                  "削除処理中にエラーが発生しました: " + throwable.getMessage(),
+                  "エラー",
+                  JOptionPane.ERROR_MESSAGE);
+            });
+            throwable.printStackTrace();
+            return null;
+          });
     }
   }
 
@@ -242,14 +257,11 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
     }
   }
 
-  
-
   @Override
   public void onEntryDeleted(ClipboardEntry entry) {
-    
+
     clipboardData.removeEntry(entry.getId());
 
-    
     fileManager.deleteEntryAsync(entry)
         .thenAccept(success -> {
           if (!success) {
@@ -257,16 +269,14 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
           }
         });
 
-    
     refreshDisplay();
   }
 
   @Override
   public void onEntryFavoriteToggled(ClipboardEntry entry) {
-    
+
     clipboardData.toggleFavorite(entry.getId());
 
-    
     fileManager.updateEntryAsync(entry)
         .thenAccept(success -> {
           if (!success) {
@@ -277,10 +287,9 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
 
   @Override
   public void onEntryCopied(ClipboardEntry entry) {
-    
+
     statusLabel.setText("コピーしました: " + entry.getPreviewText());
 
-    
     Timer timer = new Timer(2000, e -> updateStatusLabel(clipboardData.size()));
     timer.setRepeats(false);
     timer.start();
