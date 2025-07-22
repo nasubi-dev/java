@@ -158,7 +158,7 @@ public class MainWindow extends JFrame implements
     });
 
     clipboardMonitor.setChangeListener(this);
-    
+
     // お気に入り更新リスナー
     historyPanel.setFavoriteUpdateListener(() -> {
       SwingUtilities.invokeLater(() -> {
@@ -204,19 +204,19 @@ public class MainWindow extends JFrame implements
     // EDTで実行することを保証
     SwingUtilities.invokeLater(() -> {
       System.out.println("UI更新開始: " + newEntry.getText().substring(0, Math.min(30, newEntry.getText().length())));
-      
+
       // SideBarPanelの日付別エントリ数のみ更新（お気に入り数は除く）
       sideBarPanel.refreshDateEntries();
-      
+
       // HistoryPanelに新しいエントリを通知
       historyPanel.onNewEntry(newEntry);
-      
+
       // 強制的な再描画
       sideBarPanel.revalidate();
       sideBarPanel.repaint();
       historyPanel.revalidate();
       historyPanel.repaint();
-      
+
       // 少し遅延させてもう一度更新（確実にするため）
       Timer delayedUpdate = new Timer(200, e -> {
         sideBarPanel.refreshDateEntries();
@@ -225,7 +225,7 @@ public class MainWindow extends JFrame implements
       });
       delayedUpdate.setRepeats(false);
       delayedUpdate.start();
-      
+
       System.out.println("UI更新完了");
     });
   }

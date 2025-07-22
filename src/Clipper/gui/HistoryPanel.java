@@ -268,7 +268,7 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
       if (currentDisplayDate != null && currentDisplayDate.equals(LocalDate.now())) {
         // 表示を更新してスクロールを一番上に移動
         refreshDisplay();
-        
+
         // スクロールを一番上に移動
         scrollPane.getVerticalScrollBar().setValue(0);
       }
@@ -279,7 +279,7 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   public void onEntryDeleted(ClipboardEntry entry) {
     // メモリ上のデータから削除
     boolean memoryDeleted = clipboardData.removeEntry(entry.getId());
-    
+
     if (memoryDeleted) {
       // ファイルからも削除
       fileManager.deleteEntryAsync(entry)
@@ -312,7 +312,7 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
             throwable.printStackTrace();
             return null;
           });
-      
+
       // UI を即座に更新（楽観的更新）
       refreshDisplay();
     } else {
@@ -321,7 +321,9 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
           "削除エラー",
           JOptionPane.ERROR_MESSAGE);
     }
-  }  @Override
+  }
+
+  @Override
   public void onEntryFavoriteToggled(ClipboardEntry entry) {
     // お気に入り状態を切り替え
     clipboardData.toggleFavorite(entry.getId());
@@ -333,7 +335,7 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
             System.err.println("エントリの更新に失敗: " + entry.getId());
           }
         });
-    
+
     // リスナーに通知（サイドバーのお気に入り数を更新）
     if (favoriteUpdateListener != null) {
       favoriteUpdateListener.onFavoriteUpdated();

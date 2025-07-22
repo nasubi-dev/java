@@ -156,7 +156,7 @@ public class SideBarPanel extends JPanel {
     SwingUtilities.invokeLater(() -> {
       // お気に入りノードを保持して、日付ノードのみ再構築
       FavoriteTreeNode favoritesNode = null;
-      
+
       // 既存のお気に入りノードを探す
       for (int i = 0; i < rootNode.getChildCount(); i++) {
         TreeNode child = rootNode.getChildAt(i);
@@ -165,10 +165,10 @@ public class SideBarPanel extends JPanel {
           break;
         }
       }
-      
+
       // 全てのノードを削除
       rootNode.removeAllChildren();
-      
+
       // お気に入りノードを最初に追加（既存のものがあればそれを使用）
       if (favoritesNode != null) {
         rootNode.add(favoritesNode);
@@ -226,14 +226,14 @@ public class SideBarPanel extends JPanel {
     // EDTで確実に実行
     SwingUtilities.invokeLater(() -> {
       System.out.println("SideBarPanel全体更新開始");
-      
+
       try {
         loadDateTree();
-        
+
         // 強制的な再描画
         revalidate();
         repaint();
-        
+
         System.out.println("SideBarPanel全体更新完了");
       } catch (Exception e) {
         System.err.println("SideBarPanel更新エラー: " + e.getMessage());
@@ -246,14 +246,14 @@ public class SideBarPanel extends JPanel {
     // EDTで確実に実行 - お気に入り数は更新せず、日付別エントリのみ更新
     SwingUtilities.invokeLater(() -> {
       System.out.println("SideBarPanel日付別エントリ更新開始");
-      
+
       try {
         loadDateTreeExcludingFavorites();
-        
+
         // 強制的な再描画
         revalidate();
         repaint();
-        
+
         System.out.println("SideBarPanel日付別エントリ更新完了");
       } catch (Exception e) {
         System.err.println("SideBarPanel日付別エントリ更新エラー: " + e.getMessage());
@@ -366,7 +366,7 @@ public class SideBarPanel extends JPanel {
   private void expandTree() {
     // ルートノードを展開
     dateTree.expandRow(0);
-    
+
     // 最初の数行を展開（お気に入りと最近の日付）
     for (int i = 1; i < Math.min(dateTree.getRowCount(), 8); i++) {
       dateTree.expandRow(i);

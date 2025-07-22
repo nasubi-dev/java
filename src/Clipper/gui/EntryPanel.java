@@ -80,7 +80,7 @@ public class EntryPanel extends JPanel {
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 0));
     buttonPanel.setOpaque(false);
 
-    favoriteButton = new JButton(entry.isFavorite() ? "*" : "o");
+    favoriteButton = new JButton(entry.isFavorite() ? "★" : "☆");
     favoriteButton.setFont(favoriteButton.getFont().deriveFont(14f));
     favoriteButton.setForeground(entry.isFavorite() ? Color.ORANGE : Color.GRAY);
     favoriteButton.setBorderPainted(false);
@@ -89,16 +89,16 @@ public class EntryPanel extends JPanel {
     favoriteButton.setPreferredSize(new Dimension(24, 20));
     favoriteButton.setToolTipText("お気に入り切り替え");
 
-    copyButton = new JButton("Copy");
-    copyButton.setFont(copyButton.getFont().deriveFont(10f));
+    copyButton = new JButton("[C]");
+    copyButton.setFont(copyButton.getFont().deriveFont(Font.BOLD, 10f));
     copyButton.setBorderPainted(false);
     copyButton.setContentAreaFilled(false);
     copyButton.setFocusPainted(false);
-    copyButton.setPreferredSize(new Dimension(40, 20));
+    copyButton.setPreferredSize(new Dimension(30, 20));
     copyButton.setToolTipText("クリップボードにコピー");
 
-    deleteButton = new JButton("Del");
-    deleteButton.setFont(deleteButton.getFont().deriveFont(10f));
+    deleteButton = new JButton("[X]");
+    deleteButton.setFont(deleteButton.getFont().deriveFont(Font.BOLD, 10f));
     deleteButton.setBorderPainted(false);
     deleteButton.setContentAreaFilled(false);
     deleteButton.setFocusPainted(false);
@@ -212,7 +212,7 @@ public class EntryPanel extends JPanel {
   }
 
   private void updateFavoriteButton() {
-    favoriteButton.setText(entry.isFavorite() ? "*" : "o");
+    favoriteButton.setText(entry.isFavorite() ? "★" : "☆");
     favoriteButton.setForeground(entry.isFavorite() ? Color.ORANGE : Color.GRAY);
   }
 
