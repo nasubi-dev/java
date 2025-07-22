@@ -77,32 +77,56 @@ public class EntryPanel extends JPanel {
   }
 
   private JPanel createButtonPanel() {
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 0));
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
     buttonPanel.setOpaque(false);
+    buttonPanel.setPreferredSize(new Dimension(150, 36));
 
     favoriteButton = new JButton(entry.isFavorite() ? "★" : "☆");
-    favoriteButton.setFont(favoriteButton.getFont().deriveFont(14f));
+    favoriteButton.setFont(favoriteButton.getFont().deriveFont(12f));
     favoriteButton.setForeground(entry.isFavorite() ? Color.ORANGE : Color.GRAY);
-    favoriteButton.setBorderPainted(false);
-    favoriteButton.setContentAreaFilled(false);
+    favoriteButton.setBorderPainted(true);
+    favoriteButton.setBorder(BorderFactory.createRaisedBevelBorder());
+    favoriteButton.setContentAreaFilled(true);
+    favoriteButton.setBackground(Color.WHITE);
     favoriteButton.setFocusPainted(false);
-    favoriteButton.setPreferredSize(new Dimension(24, 20));
+    favoriteButton.setMargin(new Insets(2, 4, 2, 4));
+    favoriteButton.setPreferredSize(new Dimension(36, 32));
+    favoriteButton.setMinimumSize(new Dimension(36, 32));
+    favoriteButton.setMaximumSize(new Dimension(36, 32));
+    favoriteButton.setHorizontalAlignment(SwingConstants.CENTER);
+    favoriteButton.setVerticalAlignment(SwingConstants.CENTER);
     favoriteButton.setToolTipText("お気に入り切り替え");
 
-    copyButton = new JButton("[C]");
-    copyButton.setFont(copyButton.getFont().deriveFont(Font.BOLD, 10f));
-    copyButton.setBorderPainted(false);
-    copyButton.setContentAreaFilled(false);
+    copyButton = new JButton("Copy");
+    copyButton.setFont(copyButton.getFont().deriveFont(Font.PLAIN, 10f));
+    copyButton.setForeground(Color.BLUE);
+    copyButton.setBorderPainted(true);
+    copyButton.setBorder(BorderFactory.createRaisedBevelBorder());
+    copyButton.setContentAreaFilled(true);
+    copyButton.setBackground(Color.WHITE);
     copyButton.setFocusPainted(false);
-    copyButton.setPreferredSize(new Dimension(30, 20));
+    copyButton.setMargin(new Insets(2, 4, 2, 4));
+    copyButton.setPreferredSize(new Dimension(42, 32));
+    copyButton.setMinimumSize(new Dimension(42, 32));
+    copyButton.setMaximumSize(new Dimension(42, 32));
+    copyButton.setHorizontalAlignment(SwingConstants.CENTER);
+    copyButton.setVerticalAlignment(SwingConstants.CENTER);
     copyButton.setToolTipText("クリップボードにコピー");
 
-    deleteButton = new JButton("[X]");
-    deleteButton.setFont(deleteButton.getFont().deriveFont(Font.BOLD, 10f));
-    deleteButton.setBorderPainted(false);
-    deleteButton.setContentAreaFilled(false);
+    deleteButton = new JButton("Del");
+    deleteButton.setFont(deleteButton.getFont().deriveFont(Font.PLAIN, 10f));
+    deleteButton.setForeground(Color.RED);
+    deleteButton.setBorderPainted(true);
+    deleteButton.setBorder(BorderFactory.createRaisedBevelBorder());
+    deleteButton.setContentAreaFilled(true);
+    deleteButton.setBackground(Color.WHITE);
     deleteButton.setFocusPainted(false);
-    deleteButton.setPreferredSize(new Dimension(30, 20));
+    deleteButton.setMargin(new Insets(2, 4, 2, 4));
+    deleteButton.setPreferredSize(new Dimension(36, 32));
+    deleteButton.setMinimumSize(new Dimension(36, 32));
+    deleteButton.setMaximumSize(new Dimension(36, 32));
+    deleteButton.setHorizontalAlignment(SwingConstants.CENTER);
+    deleteButton.setVerticalAlignment(SwingConstants.CENTER);
     deleteButton.setToolTipText("削除");
 
     buttonPanel.add(favoriteButton);
