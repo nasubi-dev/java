@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-/**
- * クリップボードエントリを表すデータモデルクラス
- */
 public class ClipboardEntry {
   private String id;
   private String text;
@@ -14,9 +11,6 @@ public class ClipboardEntry {
   private String source;
   private boolean isFavorite;
 
-  /**
-   * 新しいクリップボードエントリを作成
-   */
   public ClipboardEntry(String text) {
     this.id = UUID.randomUUID().toString();
     this.text = text;
@@ -25,9 +19,6 @@ public class ClipboardEntry {
     this.isFavorite = false;
   }
 
-  /**
-   * 既存のデータからクリップボードエントリを作成（CSV読み込み用）
-   */
   public ClipboardEntry(String id, LocalDateTime timestamp, boolean isFavorite, String text) {
     this.id = id;
     this.text = text;
@@ -36,7 +27,7 @@ public class ClipboardEntry {
     this.isFavorite = isFavorite;
   }
 
-  // Getters
+  
   public String getId() {
     return id;
   }
@@ -57,7 +48,7 @@ public class ClipboardEntry {
     return isFavorite;
   }
 
-  // Setters
+  
   public void setFavorite(boolean favorite) {
     this.isFavorite = favorite;
   }
@@ -66,9 +57,6 @@ public class ClipboardEntry {
     this.source = source;
   }
 
-  /**
-   * プレビュー用にテキストを短縮して返す
-   */
   public String getPreviewText() {
     if (text == null)
       return "";
@@ -95,24 +83,18 @@ public class ClipboardEntry {
     return preview.toString();
   }
 
-  /**
-   * タイムスタンプを表示用フォーマットで返す
-   */
   public String getFormattedTimestamp() {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     return timestamp.format(formatter);
   }
 
-  /**
-   * CSV出力用の文字列配列を返す
-   */
   public String[] toCsvArray() {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     return new String[] {
         id,
         timestamp.format(formatter),
         String.valueOf(isFavorite),
-        "default", // category（将来の拡張用）
+        "default", 
         text
     };
   }
