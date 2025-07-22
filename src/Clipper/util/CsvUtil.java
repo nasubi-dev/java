@@ -105,7 +105,6 @@ public class CsvUtil {
     File file = new File(filePath);
     File parentDir = file.getParentFile();
 
-    
     if (parentDir != null && !parentDir.exists()) {
       if (!parentDir.mkdirs()) {
         throw new IOException("ディレクトリの作成に失敗しました: " + parentDir.getAbsolutePath());
@@ -123,7 +122,6 @@ public class CsvUtil {
     File file = new File(filePath);
     File parentDir = file.getParentFile();
 
-    
     if (parentDir != null && !parentDir.exists()) {
       if (!parentDir.mkdirs()) {
         throw new IOException("ディレクトリの作成に失敗しました: " + parentDir.getAbsolutePath());

@@ -22,13 +22,12 @@ public class ClipboardData {
 
     String cleanedText = text.trim();
 
-    
     if (duplicateCheckSet.contains(cleanedText)) {
       return false;
     }
 
     ClipboardEntry entry = new ClipboardEntry(cleanedText);
-    entries.add(0, entry); 
+    entries.add(0, entry);
     duplicateCheckSet.add(cleanedText);
     return true;
   }
@@ -106,7 +105,7 @@ public class ClipboardData {
     LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysToKeep);
     List<ClipboardEntry> toRemove = entries.stream()
         .filter(entry -> entry.getTimestamp().isBefore(cutoffDate))
-        .filter(entry -> !entry.isFavorite()) 
+        .filter(entry -> !entry.isFavorite())
         .collect(Collectors.toList());
 
     for (ClipboardEntry entry : toRemove) {
@@ -136,7 +135,7 @@ public class ClipboardData {
       entries.add(entry);
       duplicateCheckSet.add(entry.getText());
     }
-    
+
     entries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
   }
 }

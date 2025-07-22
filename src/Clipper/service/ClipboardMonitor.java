@@ -9,6 +9,9 @@ import java.awt.datatransfer.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClipboardMonitor implements ClipboardOwner {
@@ -26,6 +29,7 @@ public class ClipboardMonitor implements ClipboardOwner {
 
   public interface ClipboardChangeListener {
     void onClipboardChanged(ClipboardEntry newEntry);
+
     void onClipboardError(String error);
   }
 
@@ -115,25 +119,42 @@ public class ClipboardMonitor implements ClipboardOwner {
     }
   }
 
-  private void handleClipboardChange(String content) {
-    boolean added = clipboardData.addEntry(content);
+  private void handleClipboardChange(String newContent) {
+    System.out.println("クリップボード変更検出: " + newContent.substring(0, Math.min(30, newContent.length())));
 
-    if (added) {
-      ClipboardEntry newEntry = clipboardData.getAllEntries().stream()
-          .filter(entry -> entry.getText().equals(content))
-          .findFirst()
-          .orElse(null);
-
-      if (newEntry != null) {
-        fileManager.saveEntryAsync(newEntry)
-            .thenAccept(success -> {
-              if (!success) {
-                System.err.println("エントリの保存に失敗しました: " + newEntry.getId());
-              }
-            });
-
-        notifyClipboardChange(newEntry);
+    try {
+      boolean added = clipboardData.addEntry(newContent);
+      if (!added) {
+        System.out.println("重複のためスキップ");
+        return;
       }
+
+      // 最新のエントリを取得
+      ClipboardEntry newEntry = clipboardData.getAllEntries().get(0);
+
+      SwingUtilities.invokeLater(() -> {
+        // UI更新処理（observers代替）
+      });
+
+      // 保存処理
+      try {
+        Boolean result = fileManager.saveEntryAsync(newEntry).get(3, TimeUnit.SECONDS);
+        if (result != null && result) {
+          System.out.println("保存成功");
+        } else {
+          System.err.println("保存失敗");
+        }
+      } catch (TimeoutException e) {
+        System.err.println("保存タイムアウト");
+      } catch (ExecutionException e) {
+        System.err.println("保存実行エラー: " + e.getCause().getMessage());
+      } catch (InterruptedException e) {
+        System.err.println("保存中断");
+        Thread.currentThread().interrupt();
+      }
+
+    } catch (Exception e) {
+      System.err.println("クリップボード処理エラー: " + e.getMessage());
     }
   }
 

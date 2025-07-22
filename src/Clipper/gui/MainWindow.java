@@ -19,29 +19,25 @@ public class MainWindow extends JFrame implements
   private final ClipboardMonitor clipboardMonitor;
   private final FileManager fileManager;
 
-  
   private SideBarPanel sideBarPanel;
   private HistoryPanel historyPanel;
   private JLabel monitoringStatusLabel;
   private JMenuBar menuBar;
 
-  
   private static final String WINDOW_TITLE = "Clipper - クリップボード管理";
   private static final int DEFAULT_WIDTH = 900;
   private static final int DEFAULT_HEIGHT = 600;
 
   public MainWindow() {
-    
+
     this.clipboardData = new ClipboardData();
     this.fileManager = new FileManager();
     this.clipboardMonitor = new ClipboardMonitor(clipboardData, fileManager);
 
-    
     initializeUI();
     loadInitialData();
     setupEventHandlers();
 
-    
     startClipboardMonitoring();
   }
 
@@ -51,31 +47,21 @@ public class MainWindow extends JFrame implements
     setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     setLocationRelativeTo(null);
 
-    
-    
-
-    
     createMenuBar();
 
-    
     setLayout(new BorderLayout());
 
-    
     sideBarPanel = new SideBarPanel(clipboardData, fileManager, this);
     add(sideBarPanel, BorderLayout.WEST);
 
-    
     historyPanel = new HistoryPanel(clipboardData, clipboardMonitor, fileManager);
     add(historyPanel, BorderLayout.CENTER);
 
-    
     JPanel statusPanel = createStatusPanel();
     add(statusPanel, BorderLayout.SOUTH);
 
-    
     try {
-      
-      
+
       System.out.println("Look and Feel設定をスキップしました");
     } catch (Exception e) {
       System.err.println("Look and Feelの設定に失敗: " + e.getMessage());
@@ -85,7 +71,6 @@ public class MainWindow extends JFrame implements
   private void createMenuBar() {
     menuBar = new JMenuBar();
 
-    
     JMenu fileMenu = new JMenu("ファイル");
 
     JMenuItem exportItem = new JMenuItem("エクスポート...");
@@ -102,7 +87,6 @@ public class MainWindow extends JFrame implements
     exitItem.addActionListener(e -> exitApplication());
     fileMenu.add(exitItem);
 
-    
     JMenu editMenu = new JMenu("編集");
 
     JMenuItem clearHistoryItem = new JMenuItem("履歴をクリア");
@@ -113,7 +97,6 @@ public class MainWindow extends JFrame implements
     preferencesItem.addActionListener(e -> showPreferences());
     editMenu.add(preferencesItem);
 
-    
     JMenu helpMenu = new JMenu("ヘルプ");
 
     JMenuItem aboutItem = new JMenuItem("Clipperについて");
@@ -132,13 +115,11 @@ public class MainWindow extends JFrame implements
     statusPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     statusPanel.setBackground(new Color(248, 248, 248));
 
-    
     monitoringStatusLabel = new JLabel("クリップボード監視: 停止中");
     monitoringStatusLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
     monitoringStatusLabel.setFont(monitoringStatusLabel.getFont().deriveFont(Font.PLAIN, 11f));
     statusPanel.add(monitoringStatusLabel, BorderLayout.WEST);
 
-    
     JLabel dataPathLabel = new JLabel("データ保存場所: " + fileManager.getDataDirectory());
     dataPathLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
     dataPathLabel.setFont(dataPathLabel.getFont().deriveFont(Font.PLAIN, 11f));
@@ -149,9 +130,11 @@ public class MainWindow extends JFrame implements
   }
 
   private void loadInitialData() {
-    
+    System.out.println("初期データの読み込みを開始...");
+
     fileManager.loadRecentEntriesAsync(7)
         .thenAccept(entries -> {
+          System.out.println("読み込み完了エントリ数: " + entries.size());
           clipboardData.loadEntries(entries);
           SwingUtilities.invokeLater(() -> {
             historyPanel.loadTodayEntries();
@@ -160,12 +143,13 @@ public class MainWindow extends JFrame implements
         })
         .exceptionally(throwable -> {
           System.err.println("初期データの読み込みに失敗: " + throwable.getMessage());
+          throwable.printStackTrace();
           return null;
         });
   }
 
   private void setupEventHandlers() {
-    
+
     addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e) {
@@ -173,7 +157,6 @@ public class MainWindow extends JFrame implements
       }
     });
 
-    
     clipboardMonitor.setChangeListener(this);
   }
 
@@ -188,8 +171,6 @@ public class MainWindow extends JFrame implements
     monitoringStatusLabel.setForeground(isMonitoring ? new Color(0, 128, 0) : Color.RED);
   }
 
-  
-
   @Override
   public void onDateSelected(LocalDate date) {
     historyPanel.loadEntriesForDate(date);
@@ -197,7 +178,7 @@ public class MainWindow extends JFrame implements
 
   @Override
   public void onFavoritesSelected() {
-    
+
     SwingUtilities.invokeLater(() -> {
       historyPanel.displayFavoriteEntries();
     });
@@ -210,25 +191,21 @@ public class MainWindow extends JFrame implements
     });
   }
 
-  
-
   @Override
   public void onClipboardChanged(ClipboardEntry newEntry) {
-    
+
     historyPanel.onNewEntry(newEntry);
     sideBarPanel.refresh();
   }
 
   @Override
   public void onClipboardError(String error) {
-    
+
     JOptionPane.showMessageDialog(this,
         "クリップボード監視エラー: " + error,
         "エラー",
         JOptionPane.ERROR_MESSAGE);
   }
-
-  
 
   private void exportData() {
     JFileChooser fileChooser = new JFileChooser();
@@ -236,7 +213,7 @@ public class MainWindow extends JFrame implements
     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
     if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-      
+
       JOptionPane.showMessageDialog(this, "エクスポート機能は実装中です。");
     }
   }
@@ -247,7 +224,7 @@ public class MainWindow extends JFrame implements
     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
     if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      
+
       JOptionPane.showMessageDialog(this, "インポート機能は実装中です。");
     }
   }
@@ -290,12 +267,29 @@ public class MainWindow extends JFrame implements
         JOptionPane.QUESTION_MESSAGE);
 
     if (result == JOptionPane.YES_OPTION) {
-      
+      saveAllDataBeforeExit();
+
       clipboardMonitor.shutdown();
       fileManager.shutdown();
 
-      
       System.exit(0);
+    }
+  }
+
+  private void saveAllDataBeforeExit() {
+    System.out.println("アプリ終了時のデータ保存を開始...");
+
+    try {
+      java.util.List<ClipboardEntry> allEntries = clipboardData.getAllEntries();
+      System.out.println("保存対象エントリ数: " + allEntries.size());
+
+      for (ClipboardEntry entry : allEntries) {
+        fileManager.saveEntryAsync(entry).join();
+      }
+
+      System.out.println("データ保存が完了しました");
+    } catch (Exception e) {
+      System.err.println("データ保存中にエラーが発生: " + e.getMessage());
     }
   }
 

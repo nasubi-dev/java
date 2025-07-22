@@ -45,10 +45,14 @@ public class FileManager {
   }
 
   public CompletableFuture<Boolean> saveEntryAsync(ClipboardEntry entry) {
-    return CompletableFuture.supplyAsync(() -> {
+    System.out.println("保存開始: " + entry.getText().substring(0, Math.min(20, entry.getText().length())));
+
+    CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
       try {
         LocalDate date = entry.getTimestamp().toLocalDate();
         String filePath = getCsvFilePath(date);
+
+        File file = new File(filePath);
 
         boolean needsHeader = !CsvUtil.isValidCsvFile(filePath);
 
@@ -57,16 +61,21 @@ public class FileManager {
           rows.add(CsvUtil.createCsvHeader());
           rows.add(entry.toCsvArray());
           CsvUtil.writeCsvFile(filePath, rows);
+          System.out.println("新規ファイル保存完了: " + filePath);
         } else {
           CsvUtil.appendCsvLine(filePath, entry.toCsvArray());
+          System.out.println("既存ファイル追記完了: " + filePath);
         }
 
         return true;
-      } catch (IOException e) {
-        System.err.println("エントリの保存に失敗しました: " + e.getMessage());
+      } catch (Exception e) {
+        System.err.println("保存失敗: " + e.getMessage());
+        e.printStackTrace();
         return false;
       }
-    }, fileOperationExecutor);
+    }); // エグゼキュータを一時的に削除してテスト
+
+    return future;
   }
 
   public CompletableFuture<List<ClipboardEntry>> loadEntriesAsync(LocalDate date) {
@@ -75,12 +84,15 @@ public class FileManager {
         String filePath = getCsvFilePath(date);
 
         if (!CsvUtil.isValidCsvFile(filePath)) {
+          System.out.println("ファイルが存在しません: " + filePath);
           return new ArrayList<>();
         }
 
+        System.out.println("読み込み中のファイル: " + filePath);
         List<String[]> rows = CsvUtil.readCsvFile(filePath);
         List<ClipboardEntry> entries = new ArrayList<>();
 
+        System.out.println("ファイル内容 (" + (rows.size() - 1) + " エントリ):");
         for (int i = 1; i < rows.size(); i++) {
           String[] row = rows.get(i);
           if (row.length >= 5) {
@@ -92,26 +104,34 @@ public class FileManager {
 
               ClipboardEntry entry = new ClipboardEntry(id, timestamp, isFavorite, text);
               entries.add(entry);
+              
+              // 内容をプレビュー表示（最初の50文字）
+              String preview = text.length() > 50 ? text.substring(0, 50) + "..." : text;
+              System.out.println("  - " + timestamp.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")) + 
+                               ": " + preview.replace("\n", "\\n"));
             } catch (Exception e) {
               System.err.println("エントリの解析に失敗しました: " + e.getMessage());
             }
           }
         }
 
+        System.out.println("読み込み完了: " + entries.size() + " エントリ");
         return entries;
       } catch (IOException e) {
         System.err.println("ファイルの読み込みに失敗しました: " + e.getMessage());
         return new ArrayList<>();
       }
-    }, fileOperationExecutor);
+    }); // エグゼキュータを削除してデフォルト使用
   }
 
   public CompletableFuture<List<ClipboardEntry>> loadRecentEntriesAsync(int days) {
     return CompletableFuture.supplyAsync(() -> {
+      System.out.println("過去 " + days + " 日間のデータを読み込み中...");
       List<ClipboardEntry> allEntries = new ArrayList<>();
       List<LocalDate> recentDates = DateUtil.getRecentDates(days);
 
       for (LocalDate date : recentDates) {
+        System.out.println("処理中の日付: " + date);
         try {
           List<ClipboardEntry> dayEntries = loadEntriesAsync(date).get();
           allEntries.addAll(dayEntries);
@@ -122,8 +142,9 @@ public class FileManager {
 
       allEntries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
 
+      System.out.println("全体で " + allEntries.size() + " エントリを読み込み完了");
       return allEntries;
-    }, fileOperationExecutor);
+    }); // エグゼキュータを削除してデフォルト使用
   }
 
   public CompletableFuture<Boolean> deleteEntryAsync(ClipboardEntry entry) {
@@ -139,7 +160,6 @@ public class FileManager {
         List<String[]> rows = CsvUtil.readCsvFile(filePath);
         List<String[]> updatedRows = new ArrayList<>();
 
-        
         if (!rows.isEmpty()) {
           updatedRows.add(rows.get(0));
         }
