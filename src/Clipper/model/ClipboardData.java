@@ -138,4 +138,26 @@ public class ClipboardData {
 
     entries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
   }
+
+  // エントリを復元するメソッド（削除のロールバック用）
+  public synchronized boolean restoreEntry(ClipboardEntry entry) {
+    if (entry == null) {
+      return false;
+    }
+
+    // 既に存在する場合は何もしない
+    for (ClipboardEntry existing : entries) {
+      if (existing.getId().equals(entry.getId())) {
+        return false;
+      }
+    }
+
+    entries.add(entry);
+    duplicateCheckSet.add(entry.getText());
+    
+    // タイムスタンプ順にソート
+    entries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
+    
+    return true;
+  }
 }

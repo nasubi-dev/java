@@ -259,20 +259,51 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
 
   @Override
   public void onEntryDeleted(ClipboardEntry entry) {
-
-    clipboardData.removeEntry(entry.getId());
-
-    fileManager.deleteEntryAsync(entry)
-        .thenAccept(success -> {
-          if (!success) {
-            System.err.println("ファイルからのエントリ削除に失敗: " + entry.getId());
-          }
-        });
-
-    refreshDisplay();
-  }
-
-  @Override
+    // メモリ上のデータから削除
+    boolean memoryDeleted = clipboardData.removeEntry(entry.getId());
+    
+    if (memoryDeleted) {
+      // ファイルからも削除
+      fileManager.deleteEntryAsync(entry)
+          .thenAccept(success -> {
+            SwingUtilities.invokeLater(() -> {
+              if (success) {
+                System.out.println("エントリを削除しました: " + entry.getId());
+                // UI更新は既にrefreshDisplay()で実行済み
+              } else {
+                // ファイル削除に失敗した場合、メモリからも復元する
+                clipboardData.restoreEntry(entry);
+                refreshDisplay();
+                JOptionPane.showMessageDialog(this,
+                    "ファイルからの削除に失敗しました。",
+                    "削除エラー",
+                    JOptionPane.ERROR_MESSAGE);
+              }
+            });
+          })
+          .exceptionally(throwable -> {
+            SwingUtilities.invokeLater(() -> {
+              // エラー時はメモリからも復元
+              clipboardData.restoreEntry(entry);
+              refreshDisplay();
+              JOptionPane.showMessageDialog(this,
+                  "削除処理中にエラーが発生しました: " + throwable.getMessage(),
+                  "削除エラー",
+                  JOptionPane.ERROR_MESSAGE);
+            });
+            throwable.printStackTrace();
+            return null;
+          });
+      
+      // UI を即座に更新（楽観的更新）
+      refreshDisplay();
+    } else {
+      JOptionPane.showMessageDialog(this,
+          "エントリが見つかりません。",
+          "削除エラー",
+          JOptionPane.ERROR_MESSAGE);
+    }
+  }  @Override
   public void onEntryFavoriteToggled(ClipboardEntry entry) {
 
     clipboardData.toggleFavorite(entry.getId());

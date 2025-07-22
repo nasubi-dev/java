@@ -159,8 +159,7 @@ public class FileManager {
   public CompletableFuture<Boolean> deleteEntryAsync(ClipboardEntry entry) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        LocalDate date = entry.getTimestamp().toLocalDate();
-        String filePath = getCsvFilePath(date);
+        String filePath = getSingleCsvFilePath();
 
         if (!CsvUtil.isValidCsvFile(filePath)) {
           return false;
@@ -169,22 +168,34 @@ public class FileManager {
         List<String[]> rows = CsvUtil.readCsvFile(filePath);
         List<String[]> updatedRows = new ArrayList<>();
 
+        // ヘッダー行を保持
         if (!rows.isEmpty()) {
           updatedRows.add(rows.get(0));
         }
 
+        // 指定されたIDのエントリ以外を保持
+        boolean entryFound = false;
         for (int i = 1; i < rows.size(); i++) {
           String[] row = rows.get(i);
           if (row.length > 0 && !row[0].equals(entry.getId())) {
             updatedRows.add(row);
+          } else if (row.length > 0 && row[0].equals(entry.getId())) {
+            entryFound = true;
           }
         }
 
+        if (!entryFound) {
+          System.out.println("削除対象のエントリが見つかりませんでした: " + entry.getId());
+          return false;
+        }
+
         CsvUtil.writeCsvFile(filePath, updatedRows);
+        System.out.println("ファイルからエントリを削除しました: " + entry.getId());
         return true;
 
       } catch (IOException e) {
         System.err.println("エントリの削除に失敗しました: " + e.getMessage());
+        e.printStackTrace();
         return false;
       }
     }, fileOperationExecutor);
@@ -193,8 +204,7 @@ public class FileManager {
   public CompletableFuture<Boolean> updateEntryAsync(ClipboardEntry entry) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        LocalDate date = entry.getTimestamp().toLocalDate();
-        String filePath = getCsvFilePath(date);
+        String filePath = getSingleCsvFilePath();
 
         if (!CsvUtil.isValidCsvFile(filePath)) {
           return false;
@@ -203,6 +213,7 @@ public class FileManager {
         List<String[]> rows = CsvUtil.readCsvFile(filePath);
         List<String[]> updatedRows = new ArrayList<>();
 
+        // ヘッダー行を保持
         if (!rows.isEmpty()) {
           updatedRows.add(rows.get(0));
         }
@@ -220,13 +231,16 @@ public class FileManager {
 
         if (found) {
           CsvUtil.writeCsvFile(filePath, updatedRows);
+          System.out.println("エントリを更新しました: " + entry.getId());
           return true;
         }
 
+        System.out.println("更新対象のエントリが見つかりませんでした: " + entry.getId());
         return false;
 
       } catch (IOException e) {
         System.err.println("エントリの更新に失敗しました: " + e.getMessage());
+        e.printStackTrace();
         return false;
       }
     }, fileOperationExecutor);
