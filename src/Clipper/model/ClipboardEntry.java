@@ -27,7 +27,6 @@ public class ClipboardEntry {
     this.isFavorite = isFavorite;
   }
 
-  
   public String getId() {
     return id;
   }
@@ -48,7 +47,6 @@ public class ClipboardEntry {
     return isFavorite;
   }
 
-  
   public void setFavorite(boolean favorite) {
     this.isFavorite = favorite;
   }
@@ -84,7 +82,7 @@ public class ClipboardEntry {
   }
 
   public String getFormattedTimestamp() {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     return timestamp.format(formatter);
   }
 
@@ -94,7 +92,7 @@ public class ClipboardEntry {
         id,
         timestamp.format(formatter),
         String.valueOf(isFavorite),
-        "default", 
+        "default",
         text
     };
   }
