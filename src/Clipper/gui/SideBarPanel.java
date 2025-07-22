@@ -118,11 +118,14 @@ public class SideBarPanel extends JPanel {
       rootNode.removeAllChildren();
 
       // お気に入りノード
-      FavoriteTreeNode favoritesNode = new FavoriteTreeNode("お気に入り", clipboardData.getFavoriteEntries().size());
+      int favoriteCount = clipboardData.getFavoriteEntries().size();
+      FavoriteTreeNode favoritesNode = new FavoriteTreeNode("お気に入り", favoriteCount);
       rootNode.add(favoritesNode);
+      System.out.println("お気に入り数: " + favoriteCount);
 
       // 単一ファイル対応：メモリ内のデータを日付別にグループ化
       Map<LocalDate, List<Clipper.model.ClipboardEntry>> entriesByDate = clipboardData.getEntriesGroupedByDate();
+      System.out.println("総日付数: " + entriesByDate.size());
 
       // 過去30日の日付を取得して、エントリがある日付のみ表示
       List<LocalDate> recentDates = DateUtil.getRecentDates(30);
@@ -134,6 +137,63 @@ public class SideBarPanel extends JPanel {
         if (count > 0) {
           DateTreeNode dateNode = new DateTreeNode(date, count);
           rootNode.add(dateNode);
+          System.out.println(date + ": " + count + " エントリ");
+
+          // 今日の日付を自動選択
+          if (date.equals(LocalDate.now())) {
+            TreePath path = new TreePath(new Object[] { rootNode, dateNode });
+            dateTree.setSelectionPath(path);
+          }
+        }
+      }
+
+      treeModel.nodeStructureChanged(rootNode);
+      expandTree(); // ツリーを展開
+    });
+  }
+
+  private void loadDateTreeExcludingFavorites() {
+    SwingUtilities.invokeLater(() -> {
+      // お気に入りノードを保持して、日付ノードのみ再構築
+      FavoriteTreeNode favoritesNode = null;
+      
+      // 既存のお気に入りノードを探す
+      for (int i = 0; i < rootNode.getChildCount(); i++) {
+        TreeNode child = rootNode.getChildAt(i);
+        if (child instanceof FavoriteTreeNode) {
+          favoritesNode = (FavoriteTreeNode) child;
+          break;
+        }
+      }
+      
+      // 全てのノードを削除
+      rootNode.removeAllChildren();
+      
+      // お気に入りノードを最初に追加（既存のものがあればそれを使用）
+      if (favoritesNode != null) {
+        rootNode.add(favoritesNode);
+      } else {
+        // 新規作成（通常は発生しないはず）
+        int favoriteCount = clipboardData.getFavoriteEntries().size();
+        FavoriteTreeNode newFavoritesNode = new FavoriteTreeNode("お気に入り", favoriteCount);
+        rootNode.add(newFavoritesNode);
+      }
+
+      // 単一ファイル対応：メモリ内のデータを日付別にグループ化
+      Map<LocalDate, List<Clipper.model.ClipboardEntry>> entriesByDate = clipboardData.getEntriesGroupedByDate();
+      System.out.println("総日付数: " + entriesByDate.size());
+
+      // 過去30日の日付を取得して、エントリがある日付のみ表示
+      List<LocalDate> recentDates = DateUtil.getRecentDates(30);
+
+      for (LocalDate date : recentDates) {
+        List<Clipper.model.ClipboardEntry> entriesForDate = entriesByDate.get(date);
+        int count = entriesForDate != null ? entriesForDate.size() : 0;
+
+        if (count > 0) {
+          DateTreeNode dateNode = new DateTreeNode(date, count);
+          rootNode.add(dateNode);
+          System.out.println(date + ": " + count + " エントリ");
 
           // 今日の日付を自動選択
           if (date.equals(LocalDate.now())) {
@@ -165,9 +225,40 @@ public class SideBarPanel extends JPanel {
   public void refresh() {
     // EDTで確実に実行
     SwingUtilities.invokeLater(() -> {
-      loadDateTree();
-      // ツリーを展開状態に戻す
-      expandTree();
+      System.out.println("SideBarPanel全体更新開始");
+      
+      try {
+        loadDateTree();
+        
+        // 強制的な再描画
+        revalidate();
+        repaint();
+        
+        System.out.println("SideBarPanel全体更新完了");
+      } catch (Exception e) {
+        System.err.println("SideBarPanel更新エラー: " + e.getMessage());
+        e.printStackTrace();
+      }
+    });
+  }
+
+  public void refreshDateEntries() {
+    // EDTで確実に実行 - お気に入り数は更新せず、日付別エントリのみ更新
+    SwingUtilities.invokeLater(() -> {
+      System.out.println("SideBarPanel日付別エントリ更新開始");
+      
+      try {
+        loadDateTreeExcludingFavorites();
+        
+        // 強制的な再描画
+        revalidate();
+        repaint();
+        
+        System.out.println("SideBarPanel日付別エントリ更新完了");
+      } catch (Exception e) {
+        System.err.println("SideBarPanel日付別エントリ更新エラー: " + e.getMessage());
+        e.printStackTrace();
+      }
     });
   }
 

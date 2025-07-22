@@ -158,6 +158,14 @@ public class MainWindow extends JFrame implements
     });
 
     clipboardMonitor.setChangeListener(this);
+    
+    // お気に入り更新リスナー
+    historyPanel.setFavoriteUpdateListener(() -> {
+      SwingUtilities.invokeLater(() -> {
+        System.out.println("お気に入り更新通知受信");
+        sideBarPanel.refresh(); // お気に入り数を含む全体更新
+      });
+    });
   }
 
   private void startClipboardMonitoring() {
@@ -195,14 +203,30 @@ public class MainWindow extends JFrame implements
   public void onClipboardChanged(ClipboardEntry newEntry) {
     // EDTで実行することを保証
     SwingUtilities.invokeLater(() -> {
+      System.out.println("UI更新開始: " + newEntry.getText().substring(0, Math.min(30, newEntry.getText().length())));
+      
+      // SideBarPanelの日付別エントリ数のみ更新（お気に入り数は除く）
+      sideBarPanel.refreshDateEntries();
+      
       // HistoryPanelに新しいエントリを通知
       historyPanel.onNewEntry(newEntry);
       
-      // SideBarPanelを更新（統計情報など）
-      sideBarPanel.refresh();
+      // 強制的な再描画
+      sideBarPanel.revalidate();
+      sideBarPanel.repaint();
+      historyPanel.revalidate();
+      historyPanel.repaint();
       
-      // ウィンドウタイトルに一時的な通知を表示
-      showClipboardUpdateFeedback();
+      // 少し遅延させてもう一度更新（確実にするため）
+      Timer delayedUpdate = new Timer(200, e -> {
+        sideBarPanel.refreshDateEntries();
+        sideBarPanel.revalidate();
+        sideBarPanel.repaint();
+      });
+      delayedUpdate.setRepeats(false);
+      delayedUpdate.start();
+      
+      System.out.println("UI更新完了");
     });
   }
 
@@ -310,19 +334,6 @@ public class MainWindow extends JFrame implements
       System.out.println("Clipperを終了しました。");
       System.exit(0);
     }
-  }
-
-  private void showClipboardUpdateFeedback() {
-    // 元のタイトルを保存
-    String originalTitle = getTitle();
-    
-    // 一時的に更新通知を表示
-    setTitle(originalTitle + " - 📋 クリップボード更新！");
-    
-    // 1.5秒後に元のタイトルに戻す
-    Timer feedbackTimer = new Timer(1500, e -> setTitle(originalTitle));
-    feedbackTimer.setRepeats(false);
-    feedbackTimer.start();
   }
 
   public void showWindow() {

@@ -29,6 +29,8 @@ public class ClipboardData {
     ClipboardEntry entry = new ClipboardEntry(cleanedText);
     entries.add(0, entry);
     duplicateCheckSet.add(cleanedText);
+    
+    System.out.println("エントリ追加成功: 総数=" + entries.size() + ", お気に入り数=" + getFavoriteEntries().size());
     return true;
   }
 

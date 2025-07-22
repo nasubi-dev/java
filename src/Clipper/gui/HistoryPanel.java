@@ -16,7 +16,9 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   private final ClipboardData clipboardData;
   private final ClipboardMonitor clipboardMonitor;
   private final FileManager fileManager;
+  private FavoriteUpdateListener favoriteUpdateListener;
 
+  // UI Components
   private JPanel entriesContainer;
   private JScrollPane scrollPane;
   private JLabel statusLabel;
@@ -27,6 +29,10 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
   private String currentSearchQuery = "";
   private boolean showFavoritesOnly = false;
 
+  public interface FavoriteUpdateListener {
+    void onFavoriteUpdated();
+  }
+
   public HistoryPanel(ClipboardData clipboardData, ClipboardMonitor clipboardMonitor, FileManager fileManager) {
     this.clipboardData = clipboardData;
     this.clipboardMonitor = clipboardMonitor;
@@ -34,6 +40,10 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
 
     initializeUI();
     loadTodayEntries();
+  }
+
+  public void setFavoriteUpdateListener(FavoriteUpdateListener listener) {
+    this.favoriteUpdateListener = listener;
   }
 
   private void initializeUI() {
@@ -313,15 +323,21 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
     }
   }  @Override
   public void onEntryFavoriteToggled(ClipboardEntry entry) {
-
+    // お気に入り状態を切り替え
     clipboardData.toggleFavorite(entry.getId());
 
+    // ファイルに保存
     fileManager.updateEntryAsync(entry)
         .thenAccept(success -> {
           if (!success) {
             System.err.println("エントリの更新に失敗: " + entry.getId());
           }
         });
+    
+    // リスナーに通知（サイドバーのお気に入り数を更新）
+    if (favoriteUpdateListener != null) {
+      favoriteUpdateListener.onFavoriteUpdated();
+    }
   }
 
   @Override
