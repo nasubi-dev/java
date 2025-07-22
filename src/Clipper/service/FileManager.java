@@ -44,28 +44,38 @@ public class FileManager {
     return dataDirectory + File.separator + DateUtil.generateCsvFileName(date);
   }
 
+  public String getSingleCsvFilePath() {
+    return dataDirectory + File.separator + "clipboard_history.csv";
+  }
+
   public CompletableFuture<Boolean> saveEntryAsync(ClipboardEntry entry) {
     System.out.println("保存開始: " + entry.getText().substring(0, Math.min(20, entry.getText().length())));
 
     CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
       try {
-        LocalDate date = entry.getTimestamp().toLocalDate();
-        String filePath = getCsvFilePath(date);
-
+        String filePath = getSingleCsvFilePath();
         File file = new File(filePath);
 
-        boolean needsHeader = !CsvUtil.isValidCsvFile(filePath);
-
-        if (needsHeader) {
-          List<String[]> rows = new ArrayList<>();
-          rows.add(CsvUtil.createCsvHeader());
-          rows.add(entry.toCsvArray());
-          CsvUtil.writeCsvFile(filePath, rows);
-          System.out.println("新規ファイル保存完了: " + filePath);
-        } else {
-          CsvUtil.appendCsvLine(filePath, entry.toCsvArray());
-          System.out.println("既存ファイル追記完了: " + filePath);
+        List<String[]> allRows = new ArrayList<>();
+        
+        // ヘッダーを最初に追加
+        allRows.add(CsvUtil.createCsvHeader());
+        
+        // 新しいエントリを2番目に追加（ヘッダーの直下、つまり最新が上）
+        allRows.add(entry.toCsvArray());
+        
+        // 既存のデータがある場合は読み込んで追加（ヘッダーを除く）
+        if (CsvUtil.isValidCsvFile(filePath)) {
+          List<String[]> existingRows = CsvUtil.readCsvFile(filePath);
+          // ヘッダー行をスキップして既存データを追加
+          for (int i = 1; i < existingRows.size(); i++) {
+            allRows.add(existingRows.get(i));
+          }
         }
+        
+        // ファイル全体を書き直し
+        CsvUtil.writeCsvFile(filePath, allRows);
+        System.out.println("単一ファイル保存完了: " + filePath);
 
         return true;
       } catch (Exception e) {
@@ -76,12 +86,10 @@ public class FileManager {
     }); // エグゼキュータを一時的に削除してテスト
 
     return future;
-  }
-
-  public CompletableFuture<List<ClipboardEntry>> loadEntriesAsync(LocalDate date) {
+  }  public CompletableFuture<List<ClipboardEntry>> loadEntriesAsync(LocalDate date) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        String filePath = getCsvFilePath(date);
+        String filePath = getSingleCsvFilePath();
 
         if (!CsvUtil.isValidCsvFile(filePath)) {
           System.out.println("ファイルが存在しません: " + filePath);
@@ -92,8 +100,13 @@ public class FileManager {
         List<String[]> rows = CsvUtil.readCsvFile(filePath);
         List<ClipboardEntry> entries = new ArrayList<>();
 
-        System.out.println("ファイル内容 (" + (rows.size() - 1) + " エントリ):");
-        for (int i = 1; i < rows.size(); i++) {
+        // 最大500行（ヘッダー除く）まで読み込み
+        int maxEntries = 500;
+        int entriesToRead = Math.min(maxEntries, rows.size() - 1);
+        
+        System.out.println("ファイル内容 (全 " + (rows.size() - 1) + " エントリ中、上位 " + entriesToRead + " エントリを読み込み):");
+        
+        for (int i = 1; i <= entriesToRead; i++) {
           String[] row = rows.get(i);
           if (row.length >= 5) {
             try {
@@ -107,7 +120,7 @@ public class FileManager {
               
               // 内容をプレビュー表示（最初の50文字）
               String preview = text.length() > 50 ? text.substring(0, 50) + "..." : text;
-              System.out.println("  - " + timestamp.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")) + 
+              System.out.println("  - " + timestamp.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")) + 
                                ": " + preview.replace("\n", "\\n"));
             } catch (Exception e) {
               System.err.println("エントリの解析に失敗しました: " + e.getMessage());
@@ -126,24 +139,17 @@ public class FileManager {
 
   public CompletableFuture<List<ClipboardEntry>> loadRecentEntriesAsync(int days) {
     return CompletableFuture.supplyAsync(() -> {
-      System.out.println("過去 " + days + " 日間のデータを読み込み中...");
-      List<ClipboardEntry> allEntries = new ArrayList<>();
-      List<LocalDate> recentDates = DateUtil.getRecentDates(days);
-
-      for (LocalDate date : recentDates) {
-        System.out.println("処理中の日付: " + date);
-        try {
-          List<ClipboardEntry> dayEntries = loadEntriesAsync(date).get();
-          allEntries.addAll(dayEntries);
-        } catch (Exception e) {
-          System.err.println("日付 " + date + " のデータ読み込みに失敗しました: " + e.getMessage());
-        }
+      System.out.println("単一ファイルから最新 500 エントリを読み込み中...");
+      
+      // 単一ファイル対応のため、日付は無視して直接loadEntriesAsyncを呼ぶ
+      try {
+        List<ClipboardEntry> entries = loadEntriesAsync(LocalDate.now()).get();
+        System.out.println("全体で " + entries.size() + " エントリを読み込み完了");
+        return entries;
+      } catch (Exception e) {
+        System.err.println("データ読み込みに失敗しました: " + e.getMessage());
+        return new ArrayList<>();
       }
-
-      allEntries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
-
-      System.out.println("全体で " + allEntries.size() + " エントリを読み込み完了");
-      return allEntries;
     }); // エグゼキュータを削除してデフォルト使用
   }
 

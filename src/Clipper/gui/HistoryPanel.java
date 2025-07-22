@@ -136,21 +136,12 @@ public class HistoryPanel extends JPanel implements EntryPanel.EntryActionListen
     currentDisplayDate = date;
     statusLabel.setText("読み込み中...");
 
-    CompletableFuture<List<ClipboardEntry>> loadFuture;
-
-    if (date.equals(LocalDate.now())) {
-      
-      loadFuture = CompletableFuture.completedFuture(clipboardData.getEntriesByDate(date));
-    } else {
-      
-      loadFuture = fileManager.loadEntriesAsync(date);
-    }
-
-    loadFuture.thenAccept(entries -> {
-      SwingUtilities.invokeLater(() -> {
-        displayEntries(entries);
-        updateStatusLabel(entries.size());
-      });
+    // 単一ファイル対応：メモリ内のデータから日付で絞り込み
+    SwingUtilities.invokeLater(() -> {
+      List<ClipboardEntry> entries = clipboardData.getEntriesByDate(date);
+      displayEntries(entries);
+      updateStatusLabel(entries.size());
+      System.out.println("日付別表示: " + date + " (" + entries.size() + " エントリ)");
     });
   }
 

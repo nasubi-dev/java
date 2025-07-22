@@ -267,29 +267,14 @@ public class MainWindow extends JFrame implements
         JOptionPane.QUESTION_MESSAGE);
 
     if (result == JOptionPane.YES_OPTION) {
-      saveAllDataBeforeExit();
-
+      // クリップボード監視を停止
       clipboardMonitor.shutdown();
+      
+      // ファイル管理サービスを停止
       fileManager.shutdown();
 
+      System.out.println("Clipperを終了しました。");
       System.exit(0);
-    }
-  }
-
-  private void saveAllDataBeforeExit() {
-    System.out.println("アプリ終了時のデータ保存を開始...");
-
-    try {
-      java.util.List<ClipboardEntry> allEntries = clipboardData.getAllEntries();
-      System.out.println("保存対象エントリ数: " + allEntries.size());
-
-      for (ClipboardEntry entry : allEntries) {
-        fileManager.saveEntryAsync(entry).join();
-      }
-
-      System.out.println("データ保存が完了しました");
-    } catch (Exception e) {
-      System.err.println("データ保存中にエラーが発生: " + e.getMessage());
     }
   }
 

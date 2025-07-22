@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class SideBarPanel extends JPanel {
 
@@ -19,12 +20,12 @@ public class SideBarPanel extends JPanel {
   private final FileManager fileManager;
   private final DateSelectionListener dateSelectionListener;
 
-  // UI Components
+  
   private JTree dateTree;
   private DefaultTreeModel treeModel;
   private DefaultMutableTreeNode rootNode;
 
-  // State
+  
   private LocalDate selectedDate;
 
   public interface DateSelectionListener {
@@ -51,11 +52,11 @@ public class SideBarPanel extends JPanel {
     setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY));
     setPreferredSize(new Dimension(200, 0));
 
-    // Header panel
+    
     JPanel headerPanel = createHeaderPanel();
     add(headerPanel, BorderLayout.NORTH);
 
-    // Date tree
+    
     createDateTree();
     JScrollPane treeScrollPane = new JScrollPane(dateTree);
     treeScrollPane.setBorder(null);
@@ -76,21 +77,21 @@ public class SideBarPanel extends JPanel {
   }
 
   private void createDateTree() {
-    // Create tree model
+    
     rootNode = new DefaultMutableTreeNode("履歴");
     treeModel = new DefaultTreeModel(rootNode);
     dateTree = new JTree(treeModel);
 
-    // Configure tree appearance
+    
     dateTree.setRootVisible(false);
     dateTree.setShowsRootHandles(true);
     dateTree.setRowHeight(24);
     dateTree.setBackground(getBackground());
 
-    // Set custom cell renderer
+    
     dateTree.setCellRenderer(new DateTreeCellRenderer());
 
-    // Add selection listener
+    
     dateTree.addTreeSelectionListener(e -> {
       DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) dateTree.getLastSelectedPathComponent();
       if (selectedNode != null) {
@@ -98,7 +99,7 @@ public class SideBarPanel extends JPanel {
       }
     });
 
-    // Add double-click listener
+    
     dateTree.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
@@ -117,7 +118,7 @@ public class SideBarPanel extends JPanel {
     SwingUtilities.invokeLater(() -> {
       rootNode.removeAllChildren();
 
-      // お気に入りノード
+      
       FavoriteTreeNode favoritesNode = new FavoriteTreeNode("お気に入り", clipboardData.getFavoriteEntries().size());
       rootNode.add(favoritesNode);
 
@@ -147,6 +148,20 @@ public class SideBarPanel extends JPanel {
       dateTree.expandRow(0); // ルートノードを展開
     });
   }
+                dateTree.setSelectionPath(path);
+                dateTree.expandPath(path.getParentPath());
+              }
+            });
+          }
+        });
+      }
+
+      treeModel.nodeStructureChanged(rootNode);
+
+      
+      expandAllNodes();
+    });
+  }
 
   private void handleNodeSelection(DefaultMutableTreeNode node) {
     if (node instanceof DateTreeNode) {
@@ -159,6 +174,12 @@ public class SideBarPanel extends JPanel {
       if (dateSelectionListener != null) {
         dateSelectionListener.onFavoritesSelected();
       }
+    }
+  }
+
+  private void expandAllNodes() {
+    for (int i = 0; i < dateTree.getRowCount(); i++) {
+      dateTree.expandRow(i);
     }
   }
 
@@ -213,21 +234,21 @@ public class SideBarPanel extends JPanel {
       if (value instanceof DateTreeNode) {
         DateTreeNode dateNode = (DateTreeNode) value;
 
-        // 今日の日付は太字で表示
+        
         if (dateNode.getDate().equals(LocalDate.now())) {
           setFont(getFont().deriveFont(Font.BOLD));
         }
 
-        // アイコン設定
+        
         setIcon(new ColorIcon(Color.BLUE, 8));
 
       } else if (value instanceof FavoriteTreeNode) {
-        // お気に入りアイコン
+        
         setIcon(new ColorIcon(Color.ORANGE, 8));
         setFont(getFont().deriveFont(Font.BOLD));
       }
 
-      // 選択色
+      
       if (selected) {
         setBackgroundSelectionColor(new Color(184, 207, 229));
       } else {
